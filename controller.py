@@ -24,9 +24,14 @@ class Controller:
     def update(self, dt):
         self.view.update()
 
-    def create_new_set(self):
+    def prompt_new_set(self):
         # TODO: prompt to save previous set
-        self.view.set_window("new_set_prompt")
+
+        # creating new card set
+        card_set = self.view.set_window("new_set_prompt")
+
+    def create_new_set(self, set_data):
+        self.model.create_new_set(set_data)
 
 # starting
 Controller()

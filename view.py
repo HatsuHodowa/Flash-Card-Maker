@@ -1,5 +1,7 @@
 from tkinter import *
 import tkinter.font as tkFont
+import time
+import threading
 
 class View:
     def __init__(self, controller):
@@ -7,11 +9,13 @@ class View:
         
         # creating main window
         self.window = Tk()
+        self.error_label = None
 
         # color scheme & configuration
         self.background = "#303030"
         self.middleground = "gray"
         self.foreground = "white"
+        self.error = "red"
 
         self.widget_padx = 10
         self.widget_pady = 5
@@ -37,11 +41,26 @@ class View:
     def back_button(self):
         self.set_window("main_menu")
 
+    def create_error(self, message="An error ocurred", error_time=2):
+
+        # destroying previous error
+        if self.error_label != None:
+            self.clear_error()
+
+        # creating and packing error
+        self.error_label = Label(self.window, bg=self.background, fg=self.error, text=message, font=self.normal_font, justify=CENTER)
+        self.error_label.grid(row=100, column=0, columnspan=100)
+
+    def clear_error(self):
+        if self.error_label != None:
+            self.error_label.destroy()
+            self.error_label = None
+
     def main_menu(self):
 
         # creating window items
         title = Label(self.window, bg=self.background, fg=self.foreground, text="Flash Card Maker", font=self.heading_font)
-        create_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Create New Set", font=self.subheading_font, command=self.controller.create_new_set)
+        create_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Create New Set", font=self.subheading_font, command=self.controller.prompt_new_set)
         open_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Load Previous Set", font=self.subheading_font)
 
         # adding window items
@@ -56,8 +75,8 @@ class View:
         set_name_title = Label(self.window, bg=self.background, fg=self.foreground, text="Set Name", font=self.normal_font)
         set_name = Entry(self.window, bg=self.middleground, fg=self.foreground, font=self.normal_font)
 
-        scrollbar = Scrollbar(self.window, bg=self.middleground)
-        card_list = Listbox(self.window, yscrollcommand=scrollbar.set)
+        card_list = Listbox(self.window, bg=self.middleground, fg=self.foreground, font=self.normal_font, height=6)
+        scrollbar = Scrollbar(self.window)
 
         card_key_title = Label(self.window, bg=self.background, fg=self.foreground, text="Term", font=self.normal_font)
         card_key = Entry(self.window, bg=self.middleground, fg=self.foreground, font=self.normal_font)
@@ -74,6 +93,7 @@ class View:
         set_name_title.grid(row=1, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
         set_name.grid(row=1, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
         card_list.grid(row=2, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        scrollbar.grid(row=2, column=2, sticky=NSEW, pady=self.widget_pady)
 
         card_key_title.grid(row=3, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
         card_key.grid(row=3, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
@@ -93,7 +113,10 @@ class View:
             value = card_value.get()
 
             if key == "" or value == "":
+                self.create_error("Missing term or definition")
                 return
+            else:
+                self.clear_error()
             
             # creating new card
             card_list.insert(END, f"{key} : {value}")
@@ -102,9 +125,39 @@ class View:
             card_key.delete(0, END)
             card_value.delete(0, END)
 
+        def delete_card():
+            for i in card_list.curselection():
+                card_list.delete(i)
+
+        def confirm_set():
+            
+            # checking set name
+            name = set_name.get()
+            if name == "":
+                self.create_error("Missing card set name")
+                return
+            else:
+                self.clear_error()
+            
+            # getting set data
+            set_data = []
+            for card_text in card_list.get(0, END):
+                card_split = card_text.split(" : ")
+                key = card_split[0]
+                value = card_split[1]
+
+                set_data.append((key, value))
+
+            # creating set
+            self.controller.create_new_set(set_data)
+            self.back_button()
+
         # configuration
         scrollbar.config(command=card_list.yview)
+        card_list.config(yscrollcommand=scrollbar.set)
         new_button.config(command=create_new_card)
+        delete_buton.config(command=delete_card)
+        confirm_button.config(command=confirm_set)
 
     def update(self):
         self.window.update()
