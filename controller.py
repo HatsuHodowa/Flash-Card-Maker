@@ -6,7 +6,7 @@ class Controller:
     def __init__(self):
         self.model = model.Model(self)
         self.view = view.View(self)
-        self.framerate = 30
+        self.framerate = 10
         self.last_update = time.time()
 
         # update loop
@@ -23,6 +23,10 @@ class Controller:
 
     def update(self, dt):
         self.view.update()
+
+    def create_new_set(self):
+        # TODO: prompt to save previous set
+        self.view.set_window("new_set_prompt")
 
 # starting
 Controller()
