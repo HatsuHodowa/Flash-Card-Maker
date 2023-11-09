@@ -1,6 +1,7 @@
 import model
 import view
 import time
+import os
 
 class Controller:
     def __init__(self):
@@ -24,14 +25,24 @@ class Controller:
     def update(self, dt):
         self.view.update()
 
-    def prompt_new_set(self):
-        # TODO: prompt to save previous set
+    def prompt_new_set(self, set_data: None, set_name: None):
+        self.view.set_window("new_set_prompt", set_data, set_name)
 
-        # creating new card set
-        card_set = self.view.set_window("new_set_prompt")
+    def prompt_load_set(self):
+        all_files = []
+        for file in os.listdir("CardSets"):
+            if file.endswith(".set"):
+                all_files.append(file)
 
-    def create_new_set(self, set_data):
-        self.model.create_new_set(set_data)
+        self.view.set_window("load_set", all_files)
+
+    def create_new_set(self, set_data, name):
+        self.model.create_new_set(set_data, name)
+        self.view.set_window("display_set")
+    
+    def load_set(self, set_name):
+        self.model.load_set(set_name)
+        self.view.set_window("display_set")
 
 # starting
 Controller()
