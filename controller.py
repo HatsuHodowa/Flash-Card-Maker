@@ -25,7 +25,7 @@ class Controller:
     def update(self, dt):
         self.view.update()
 
-    def prompt_new_set(self, set_data: None, set_name: None):
+    def prompt_new_set(self, set_data=None, set_name=None):
         self.view.set_window("new_set_prompt", set_data, set_name)
 
     def prompt_load_set(self):
@@ -35,6 +35,18 @@ class Controller:
                 all_files.append(file)
 
         self.view.set_window("load_set", all_files)
+
+    def prompt_delete_set(self, set_name):
+
+        # double checking action
+        def on_yes():
+            os.remove("CardSets/" + set_name)
+            self.prompt_load_set()
+
+        def on_no():
+            self.prompt_load_set()
+
+        self.view.set_window("are_you_sure", f"Do you want to delete the card set {set_name}?", on_yes, on_no)
 
     def create_new_set(self, set_data, name):
         self.model.create_new_set(set_data, name)

@@ -11,13 +11,11 @@ class Model:
 
     def load_set(self, file_name):
         set_data = []
-        print('loading')
 
         # finding file
         with open("CardSets/" + file_name, "r", encoding="utf-8") as f:
             for line in f.readlines():
-                line.replace("\n", "")
-                print(line)
+                line = line.replace("\n", "")
                 set_data.append(tuple(line.split(",")))
 
         # setting open set
@@ -27,14 +25,12 @@ class Model:
     def save_current_set(self):
         if self.current_set == None:
             return
-        print('saving')
         
         # creating file
         file_name = self.current_set_name + ".set"
         with open("CardSets/" + file_name, "w", encoding="utf-8") as f:
             file_content = ""
             for card in self.current_set:
-                print(card)
                 file_content += card[0] + "," + card[1] + "\n"
                 
             # writing file

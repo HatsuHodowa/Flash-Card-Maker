@@ -246,11 +246,34 @@ class View:
 
                 self.controller.prompt_new_set(set_data, set_name)
 
+        def on_delete_file():
+            selected = get_selected()
+            self.controller.prompt_delete_set(selected)
+
         # configuration
         scrollbar.config(command=set_list.yview)
         set_list.config(yscrollcommand=scrollbar.set)
         load_file.config(command=on_load_file)
         edit_file.config(command=on_edit_file)
+        delete_file.config(command=on_delete_file)
+
+    def are_you_sure(self, prompt, yes_callback, no_callback):
+
+        # creating window items
+        title = Label(self.window, bg=self.background, fg=self.foreground, text="Are you sure?", font=self.heading_font)
+        message = Label(self.window, bg=self.background, fg=self.foreground, text=prompt, font=self.subheading_font)
+
+        yes_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Yes", font=self.normal_font, width=15, command=yes_callback)
+        no_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="No", font=self.normal_font, width=15, command=no_callback)
+        warning = Label(self.window, bg=self.background, fg=self.foreground, text="You cannot undo this action.", font=self.normal_font)
+
+        # placing window items
+        title.grid(row=0, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        message.grid(row=1, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+
+        yes_button.grid(row=2, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        no_button.grid(row=2, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        warning.grid(row=3, column=0, columnspan=2, sticky=NSEW, padx=self.widget_pady, pady=self.widget_pady)
 
     def update(self):
         self.window.update()
