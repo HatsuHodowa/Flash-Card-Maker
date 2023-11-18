@@ -26,6 +26,16 @@ class View:
         self.subheading_font = tkFont.Font(self.window, family="Helvetica", size=18, weight="bold")
         self.normal_font = tkFont.Font(self.window, family="Helvetica", size=14)
 
+        self.card_front_color = "#dddddd"
+        self.card_back_color = "#505050"
+
+        self.card_front_text = "#000000"
+        self.card_back_text= "#ffffff"
+
+        # other attributes
+        self.current_card = None
+        self.current_side = False
+
         # opening main menu
         self.set_window("main_menu")
 
@@ -171,9 +181,18 @@ class View:
 
     def display_set(self):
 
+        # other variables
+        self.current_card = 0
+        self.current_side = False
+        last_card = len(self.controller.model.current_set) - 1
+
         # creating window items
         title = Label(self.window, bg=self.background, fg=self.foreground, text="Current Set: " + self.controller.model.current_set_name, font=self.heading_font)
         card_display = Button(self.window, bg=self.foreground, fg=self.background, text="No current card", font=self.subheading_font, height=5, width=15)
+
+        card_index = Label(self.window, bg=self.background, fg=self.foreground, text=f"Card 1 / {last_card + 1}", font=self.normal_font)
+        card_side = Label(self.window, bg=self.background, fg=self.foreground, text="Side: Front", font=self.normal_font)
+
         next_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Next", font=self.normal_font, width=10)
         prev_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Previous", font=self.normal_font, width=10)
         back_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Back", font=self.normal_font, command=self.back_button)
@@ -181,19 +200,60 @@ class View:
         # adding window items
         title.grid(row=0, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
         card_display.grid(row=1, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        next_button.grid(row=2, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        prev_button.grid(row=2, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        back_button.grid(row=3, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+
+        card_index.grid(row=2, column=0, sticky=E, padx=self.widget_padx, pady=self.widget_pady)
+        card_side.grid(row=2, column=1, sticky=W, padx=self.widget_padx, pady=self.widget_pady)
+
+        next_button.grid(row=3, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        prev_button.grid(row=3, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        back_button.grid(row=4, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
 
         # button functions
+        def update_card():
+            
+            # finding color
+            background = None
+            foreground = None
+            side_name = None
+
+            if self.current_side == False:
+                background = self.card_front_color
+                foreground = self.card_front_text
+                side_name = "Side: Front"
+            else:
+                background = self.card_back_color
+                foreground = self.card_back_text
+                side_name = "Side: Back"
+
+            # updating display
+            card_info = self.controller.model.current_set[self.current_card]
+            card_display.config(text=card_info[self.current_side], bg=background, fg=foreground)
+            card_side.config(text=side_name)
+            card_index.config(text=f"Card {self.current_card + 1} / {len(self.controller.model.current_set)}")
+
+        update_card()
+
         def on_next_button():
-            pass
+            if self.current_card + 1 <= last_card:
+                self.current_card += 1
+            else:
+                self.current_card = 0
+
+            self.current_side = False
+            update_card()
 
         def on_prev_button():
-            pass
+            if self.current_card - 1 >= 0:
+                self.current_card -= 1
+            else:
+                self.current_card = last_card
+
+            self.current_side = False
+            update_card()
 
         def on_card_press():
-            pass
+            self.current_side = not self.current_side
+            update_card()
 
         # configuration
         next_button.config(command=on_next_button)

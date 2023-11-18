@@ -7,7 +7,7 @@ class Controller:
     def __init__(self):
         self.model = model.Model(self)
         self.view = view.View(self)
-        self.framerate = 10
+        self.framerate = 15
         self.last_update = time.time()
 
         # update loop
