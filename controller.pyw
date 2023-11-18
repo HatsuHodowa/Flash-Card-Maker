@@ -2,6 +2,7 @@ import model
 import view
 import time
 import os
+import sys
 
 class Controller:
     def __init__(self):
@@ -11,7 +12,8 @@ class Controller:
         self.last_update = time.time()
 
         # update loop
-        while True:
+        self.active = True
+        while self.active:
 
             # checking framerate
             curr_time = time.time()
@@ -21,6 +23,10 @@ class Controller:
                 # updating
                 self.last_update = curr_time
                 self.update(dt)
+
+    def on_closing(self):
+        self.active = False
+        self.view.window.destroy()
 
     def update(self, dt):
         self.view.update()

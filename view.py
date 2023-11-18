@@ -10,6 +10,7 @@ class View:
         # creating main window
         self.window = Tk()
         self.error_label = None
+        self.window.protocol("WM_DELETE_WINDOW", self.controller.on_closing)
 
         # color scheme & configuration
         self.background = "#303030"
