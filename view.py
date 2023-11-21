@@ -37,6 +37,9 @@ class View:
         self.current_card = None
         self.current_side = False
 
+        self.window_history = []
+        self.window_args_history = []
+
         # opening main menu
         self.set_window("main_menu")
 
@@ -45,12 +48,34 @@ class View:
             widget.destroy()
 
     def set_window(self, to_set, *args):
+        
+        # setting window with args
         self.clear_window()
         self.window.configure(background=self.background, padx=self.window_padx, pady=self.window_pady)
         getattr(self, to_set)(*args)
 
+        # adding to history
+        self.window_history.append(to_set)
+        self.window_args_history.append(args)
+
     def back_button(self):
-        self.set_window("main_menu")
+
+        # checking history
+        if len(self.window_history) > 1:
+            
+            # finding last page
+            last_window = self.window_history[-2]
+            last_window_args = self.window_args_history[-2]
+
+            # reverting
+            self.window_history.pop()
+            self.window_args_history.pop()
+            self.set_window(last_window, *last_window_args)
+            self.window_history.pop()
+            self.window_args_history.pop()
+        
+        else:
+            self.set_window("main_menu")
 
     def create_error(self, message="An error ocurred", error_time=2):
 
@@ -180,15 +205,17 @@ class View:
         delete_buton.config(command=delete_card)
         confirm_button.config(command=confirm_set)
 
-    def display_set(self):
+    def display_set(self, set_data=None):
+        if set_data == None:
+            set_data = self.controller.model.current_set
 
         # other variables
         self.current_card = 0
         self.current_side = False
-        last_card = len(self.controller.model.current_set) - 1
+        last_card = len(set_data) - 1
 
         # creating window items
-        title = Label(self.window, bg=self.background, fg=self.foreground, text="Current Set: " + self.controller.model.current_set_name, font=self.heading_font)
+        title = Label(self.window, bg=self.background, fg=self.foreground, text=self.controller.model.current_set_name, font=self.heading_font)
         card_display = Button(self.window, bg=self.foreground, fg=self.background, text="No current card", font=self.subheading_font, height=5, width=15)
 
         card_index = Label(self.window, bg=self.background, fg=self.foreground, text=f"Card 1 / {last_card + 1}", font=self.normal_font)
@@ -197,6 +224,7 @@ class View:
         next_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Next", font=self.normal_font, width=10)
         prev_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Previous", font=self.normal_font, width=10)
         back_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Back", font=self.normal_font, command=self.back_button)
+        shuffle_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Shuffle", font=self.normal_font)
 
         # adding window items
         title.grid(row=0, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
@@ -207,7 +235,8 @@ class View:
 
         next_button.grid(row=3, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
         prev_button.grid(row=3, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        back_button.grid(row=4, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        back_button.grid(row=4, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        shuffle_button.grid(row=4, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
 
         # button functions
         def update_card():
@@ -227,10 +256,10 @@ class View:
                 side_name = "Side: Back"
 
             # updating display
-            card_info = self.controller.model.current_set[self.current_card]
+            card_info = set_data[self.current_card]
             card_display.config(text=card_info[self.current_side], bg=background, fg=foreground)
             card_side.config(text=side_name)
-            card_index.config(text=f"Card {self.current_card + 1} / {len(self.controller.model.current_set)}")
+            card_index.config(text=f"Card {self.current_card + 1} / {len(set_data)}")
 
         update_card()
 
@@ -252,6 +281,10 @@ class View:
             self.current_side = False
             update_card()
 
+        def on_set_shuffle():
+            shuffled_set = self.controller.model.shuffle_set()
+            self.set_window("display_set", shuffled_set)
+
         def on_card_press():
             self.current_side = not self.current_side
             update_card()
@@ -259,6 +292,7 @@ class View:
         # configuration
         next_button.config(command=on_next_button)
         prev_button.config(command=on_prev_button)
+        shuffle_button.config(command=on_set_shuffle)
         card_display.config(command=on_card_press)
 
     def load_set(self, all_files):
@@ -285,7 +319,7 @@ class View:
 
         # adding files to list
         for file in all_files:
-            set_list.insert(END, file)
+            set_list.insert(END, file.replace(".set", ""))
 
         # button functions
         def get_selected():
@@ -296,12 +330,12 @@ class View:
         def on_load_file():
             selected = get_selected()
             if selected != None:
-                self.controller.load_set(selected)
+                self.controller.load_set(selected + ".set")
 
         def on_edit_file():
             selected = get_selected()
             if selected != None:
-                self.controller.model.load_set(selected)
+                self.controller.model.load_set(selected + ".set")
                 set_data = self.controller.model.current_set
                 set_name = self.controller.model.current_set_name
 
@@ -309,7 +343,7 @@ class View:
 
         def on_delete_file():
             selected = get_selected()
-            self.controller.prompt_delete_set(selected)
+            self.controller.prompt_delete_set(selected + ".set")
 
         # configuration
         scrollbar.config(command=set_list.yview)

@@ -1,8 +1,28 @@
+import random
+
 class Model:
     def __init__(self, controller):
         self.controller = controller
         self.current_set = None
         self.current_set_name = ""
+
+    def shuffle_set(self):
+        shuffled_set = []
+        used_indices = []
+
+        for i in range(len(self.current_set)):
+
+            # finding random index
+            card_index = None
+            while card_index == None or card_index in used_indices:
+                card_index = random.randint(0, len(self.current_set) - 1)
+
+            # adding card
+            shuffled_set.append(self.current_set[card_index])
+            used_indices.append(card_index)
+
+        # returning shuffled set
+        return shuffled_set
 
     def create_new_set(self, set_data, set_name):
         self.current_set = set_data
