@@ -4,3 +4,4 @@ A simple python program for creating flash card sets and studying them. I create
 # Future To-Dos
 - Add a way to flip all of the cards to study them backwards
 - Add a quiz mode where you have to type the answer and it gives you feedback after each question
+- Add a way to study with a subset from a set
