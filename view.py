@@ -47,7 +47,7 @@ class View:
         for widget in self.window.winfo_children():
             widget.destroy()
 
-    def set_window(self, to_set, *args):
+    def set_window(self, to_set, *args, **kwargs):
         
         # setting window with args
         self.clear_window()
@@ -55,8 +55,9 @@ class View:
         getattr(self, to_set)(*args)
 
         # adding to history
-        self.window_history.append(to_set)
-        self.window_args_history.append(args)
+        if "history_disabled" in kwargs and kwargs["history_disabled"] != True:
+            self.window_history.append(to_set)
+            self.window_args_history.append(args)
 
     def back_button(self):
 
@@ -213,6 +214,7 @@ class View:
         self.current_card = 0
         self.current_side = False
         last_card = len(set_data) - 1
+        subset_text = StringVar()
 
         # creating window items
         title = Label(self.window, bg=self.background, fg=self.foreground, text=self.controller.model.current_set_name, font=self.heading_font)
@@ -220,11 +222,15 @@ class View:
 
         card_index = Label(self.window, bg=self.background, fg=self.foreground, text=f"Card 1 / {last_card + 1}", font=self.normal_font)
         card_side = Label(self.window, bg=self.background, fg=self.foreground, text="Side: Front", font=self.normal_font)
+        subset = Entry(self.window, bg=self.middleground, fg=self.foreground, font=self.normal_font, textvariable=subset_text)
 
+        subset_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Set Subset", font=self.normal_font, width=10)
         next_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Next", font=self.normal_font, width=10)
         prev_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Previous", font=self.normal_font, width=10)
+        flip_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Flip Cards", font=self.normal_font, width=10)
+        shuffle_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Shuffle", font=self.normal_font, width=10)
         back_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Back", font=self.normal_font, command=self.back_button)
-        shuffle_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Shuffle", font=self.normal_font)
+        reset_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Reset", font=self.normal_font)
 
         # adding window items
         title.grid(row=0, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
@@ -232,11 +238,15 @@ class View:
 
         card_index.grid(row=2, column=0, sticky=E, padx=self.widget_padx, pady=self.widget_pady)
         card_side.grid(row=2, column=1, sticky=W, padx=self.widget_padx, pady=self.widget_pady)
+        subset.grid(row=3, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
 
-        next_button.grid(row=3, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        prev_button.grid(row=3, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        back_button.grid(row=4, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        shuffle_button.grid(row=4, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        subset_button.grid(row=3, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        next_button.grid(row=4, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        prev_button.grid(row=4, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        flip_button.grid(row=5, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        shuffle_button.grid(row=5, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        back_button.grid(row=6, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        reset_button.grid(row=6, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
 
         # button functions
         def update_card():
@@ -282,18 +292,66 @@ class View:
             update_card()
 
         def on_set_shuffle():
-            shuffled_set = self.controller.model.shuffle_set()
-            self.set_window("display_set", shuffled_set)
+            shuffled_set = self.controller.model.shuffle_set(set_data)
+            self.set_window("display_set", shuffled_set, history_disabled=True)
+
+        def on_set_flip():
+            flipped_set = self.controller.model.flip_set(set_data)
+            self.set_window("display_set", flipped_set, history_disabled=True)
+
+        def on_reset():
+            self.set_window("display_set", history_disabled=True)
 
         def on_card_press():
             self.current_side = not self.current_side
             update_card()
 
+        def on_subset_changed(var, index, mode):
+
+            # filtering text
+            text = subset_text.get()
+            new_text = ""
+            has_dash = False
+
+            for char in text:
+                if char.isnumeric() or (char == "-" and not has_dash):
+                    new_text += char
+
+                if char == "-":
+                    has_dash = True
+
+            # setting text
+            subset_text.set(new_text)
+
+        def on_subset_set():
+            
+            # getting current text
+            text = subset_text.get()
+            split = text.split("-")
+            first_index = max(min(int(split[0]), len(set_data)), 1)
+            second_index = max(min(int(split[1]), len(set_data)), 1)
+
+            # checking indexes
+            if first_index > second_index:
+                first_index = second_index
+                subset_text.set(f"{first_index}-{second_index}")
+                return
+
+            # getting subset
+            subset = set_data[first_index - 1 : second_index]
+            self.set_window("display_set", subset)
+
         # configuration
+        subset_button.config(command=on_subset_set)
         next_button.config(command=on_next_button)
         prev_button.config(command=on_prev_button)
         shuffle_button.config(command=on_set_shuffle)
         card_display.config(command=on_card_press)
+        flip_button.config(command=on_set_flip)
+        reset_button.config(command=on_reset)
+
+        subset_text.set(f"1-{len(set_data)}")
+        subset_text.trace("w", on_subset_changed)
 
     def load_set(self, all_files):
 

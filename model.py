@@ -6,23 +6,39 @@ class Model:
         self.current_set = None
         self.current_set_name = ""
 
-    def shuffle_set(self):
+    def shuffle_set(self, set_data=None):
+        if set_data == None:
+            set_data = self.current_set
+
+        # shuffling set
         shuffled_set = []
         used_indices = []
 
-        for i in range(len(self.current_set)):
+        for i in range(len(set_data)):
 
             # finding random index
             card_index = None
             while card_index == None or card_index in used_indices:
-                card_index = random.randint(0, len(self.current_set) - 1)
+                card_index = random.randint(0, len(set_data) - 1)
 
             # adding card
-            shuffled_set.append(self.current_set[card_index])
+            shuffled_set.append(set_data[card_index])
             used_indices.append(card_index)
 
         # returning shuffled set
         return shuffled_set
+    
+    def flip_set(self, set_data=None):
+        if set_data == None:
+            set_data = self.current_set
+
+        # creating flipped set
+        flipped = []
+        for card in set_data:
+            flipped.append((card[1], card[0]))
+
+        # returning
+        return flipped
 
     def create_new_set(self, set_data, set_name):
         self.current_set = set_data
