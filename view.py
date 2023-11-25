@@ -55,7 +55,7 @@ class View:
         getattr(self, to_set)(*args)
 
         # adding to history
-        if "history_disabled" in kwargs and kwargs["history_disabled"] != True:
+        if not "history_disabled" in kwargs or kwargs["history_disabled"] == False:
             self.window_history.append(to_set)
             self.window_args_history.append(args)
 
@@ -93,17 +93,53 @@ class View:
             self.error_label.destroy()
             self.error_label = None
 
+    def numeric_range_entry(self, var, set_data):
+
+        # filtering text
+        text = var.get()
+        new_text = ""
+        has_dash = False
+
+        for char in text:
+            if char.isnumeric() or (char == "-" and not has_dash):
+                new_text += char
+
+            if char == "-":
+                has_dash = True
+
+        # checking numbers
+        if has_dash and new_text.split("-")[1] != "":
+
+            # setting caps
+            split = new_text.split("-")
+            first_index = max(min(int(split[0]), len(set_data)), 1)
+            second_index = max(min(int(split[1]), len(set_data)), 1)
+
+            # setting text
+            var.set(f"{first_index}-{second_index}")
+
+        else:
+            var.set(new_text)
+
+    def boolean_button_toggle(self, button):
+        if button.cget("text") == "True":
+            button.config(text="False", bg="red")
+        else:
+            button.config(text="True", bg="green")
+
     def main_menu(self):
 
         # creating window items
         title = Label(self.window, bg=self.background, fg=self.foreground, text="Flash Card Maker", font=self.heading_font)
         create_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Create New Set", font=self.subheading_font, command=self.controller.prompt_new_set)
         open_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Load Previous Set", font=self.subheading_font, command=self.controller.prompt_load_set)
+        practice_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Practice Set", font=self.subheading_font, command=self.controller.prompt_practice)
 
         # adding window items
-        title.grid(row=0, column=1, columnspan=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        title.grid(row=0, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
         create_button.grid(row=1, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
         open_button.grid(row=2, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        practice_button.grid(row=3, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
 
     def new_set_prompt(self, set_data=None, name=None):
 
@@ -222,7 +258,7 @@ class View:
 
         card_index = Label(self.window, bg=self.background, fg=self.foreground, text=f"Card 1 / {last_card + 1}", font=self.normal_font)
         card_side = Label(self.window, bg=self.background, fg=self.foreground, text="Side: Front", font=self.normal_font)
-        subset = Entry(self.window, bg=self.middleground, fg=self.foreground, font=self.normal_font, textvariable=subset_text)
+        subset = Entry(self.window, bg=self.middleground, fg=self.foreground, font=self.normal_font, textvariable=subset_text, width=10)
 
         subset_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Set Subset", font=self.normal_font, width=10)
         next_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Next", font=self.normal_font, width=10)
@@ -307,39 +343,11 @@ class View:
             update_card()
 
         def on_subset_changed(var, index, mode):
-
-            # filtering text
-            text = subset_text.get()
-            new_text = ""
-            has_dash = False
-
-            for char in text:
-                if char.isnumeric() or (char == "-" and not has_dash):
-                    new_text += char
-
-                if char == "-":
-                    has_dash = True
-
-            # setting text
-            subset_text.set(new_text)
+            self.numeric_range_entry(subset_text, set_data)
 
         def on_subset_set():
-            
-            # getting current text
-            text = subset_text.get()
-            split = text.split("-")
-            first_index = max(min(int(split[0]), len(set_data)), 1)
-            second_index = max(min(int(split[1]), len(set_data)), 1)
-
-            # checking indexes
-            if first_index > second_index:
-                first_index = second_index
-                subset_text.set(f"{first_index}-{second_index}")
-                return
-
-            # getting subset
-            subset = set_data[first_index - 1 : second_index]
-            self.set_window("display_set", subset)
+            subset = self.controller.model.get_subset(subset_text)
+            self.set_window("display_set", subset, history_disabled=True)
 
         # configuration
         subset_button.config(command=on_subset_set)
@@ -353,7 +361,7 @@ class View:
         subset_text.set(f"1-{len(set_data)}")
         subset_text.trace("w", on_subset_changed)
 
-    def load_set(self, all_files):
+    def load_set(self, all_files, callback=None, *callback_args):
 
         # creating window items
         title = Label(self.window, bg=self.background, fg=self.foreground, text="Load from file", font=self.heading_font)
@@ -388,7 +396,10 @@ class View:
         def on_load_file():
             selected = get_selected()
             if selected != None:
-                self.controller.load_set(selected + ".set")
+                if callback == None:
+                    self.controller.load_set(selected + ".set", self.set_window, "display_set")
+                else:
+                    self.controller.load_set(selected + ".set", callback, *callback_args)
 
         def on_edit_file():
             selected = get_selected()
@@ -409,6 +420,62 @@ class View:
         load_file.config(command=on_load_file)
         edit_file.config(command=on_edit_file)
         delete_file.config(command=on_delete_file)
+
+    def practice_menu(self):
+
+        # variables
+        set_data = self.controller.model.current_set
+        set_name = self.controller.model.current_set_name
+        current_range = StringVar()
+
+        # creating window items
+        title = Label(self.window, bg=self.background, fg=self.foreground, text="Practice Set", font=self.heading_font)
+        name_label = Label(self.window, bg=self.background, fg=self.foreground, text=set_name, font=self.subheading_font)
+
+        range_label = Label(self.window, bg=self.background, fg=self.foreground, text="Range:", font=self.normal_font)
+        range_entry = Entry(self.window, bg=self.middleground, fg=self.foreground, textvariable=current_range, font=self.normal_font, width=10)
+        flipped_label = Label(self.window, bg=self.background, fg=self.foreground, text="Cards Flipped:", font=self.normal_font)
+        flip_button = Button(self.window, bg="red", fg=self.foreground, text="False", font=self.normal_font)
+        shuffle_label = Label(self.window, bg=self.background, fg=self.foreground, text="Shuffled:", font=self.normal_font)
+        shuffle_button = Button(self.window, bg="green", fg=self.foreground, text="True", font=self.normal_font)
+
+        reset_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Reset", font=self.normal_font)
+        back_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Back", font=self.normal_font, command=self.back_button)
+
+        # gridding window items
+        title.grid(row=0, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        name_label.grid(row=1, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+
+        range_label.grid(row=2, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        range_entry.grid(row=2, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        flipped_label.grid(row=3, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        flip_button.grid(row=3, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        shuffle_label.grid(row=4, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        shuffle_button.grid(row=4, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+
+        back_button.grid(row=5, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        reset_button.grid(row=5, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+
+        # button functions
+        def on_range_changed(var, index, mode):
+            self.numeric_range_entry(current_range, set_data)
+
+        def on_flip_button():
+            self.boolean_button_toggle(flip_button)
+
+        def on_shuffle_button():
+            self.boolean_button_toggle(shuffle_button)
+
+        def on_reset_button():
+            self.set_window("practice_menu")
+
+        # configuration
+        current_range.set(f"1-{len(set_data)}")
+        current_range.trace("w", on_range_changed)
+
+        flip_button.config(command=on_flip_button)
+        shuffle_button.config(command=on_shuffle_button)
+        reset_button.config(command=on_reset_button)
 
     def are_you_sure(self, prompt, yes_callback, no_callback):
 

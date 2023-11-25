@@ -34,13 +34,13 @@ class Controller:
     def prompt_new_set(self, set_data=None, set_name=None):
         self.view.set_window("new_set_prompt", set_data, set_name)
 
-    def prompt_load_set(self):
+    def prompt_load_set(self, *args):
         all_files = []
         for file in os.listdir("CardSets"):
             if file.endswith(".set"):
                 all_files.append(file)
 
-        self.view.set_window("load_set", all_files)
+        self.view.set_window("load_set", all_files, *args)
 
     def prompt_delete_set(self, set_name):
 
@@ -58,9 +58,13 @@ class Controller:
         self.model.create_new_set(set_data, name)
         self.view.set_window("display_set")
     
-    def load_set(self, set_name):
+    def load_set(self, set_name, callback=None, *callback_args):
         self.model.load_set(set_name)
-        self.view.set_window("display_set")
+        if callback != None:
+            callback(*callback_args)
+
+    def prompt_practice(self):
+        self.prompt_load_set(self.view.set_window, "practice_menu")
 
 # starting
 Controller()

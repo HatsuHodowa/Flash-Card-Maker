@@ -28,6 +28,21 @@ class Model:
         # returning shuffled set
         return shuffled_set
     
+    def get_subset(self, var):
+        
+        # getting current text
+        text = var.get()
+        split = text.split("-")
+        first_index = int(split[0])
+        second_index = int(split[1])
+        first_index = min(first_index, second_index)
+
+        # getting subset
+        subset = self.current_set[first_index - 1 : second_index]
+
+        # returning
+        return subset
+    
     def flip_set(self, set_data=None):
         if set_data == None:
             set_data = self.current_set
