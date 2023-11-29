@@ -3,8 +3,8 @@ A simple python program for creating flash card sets and studying them. I create
 
 # Current Features
 - Create and view flash-card sets
- - Ability to shuffle or flip card sets when viewing them
- - Ability to view subsets of a set
+  - Ability to shuffle or flip card sets when viewing them
+  - Ability to view subsets of a set
 
 # Future To-Dos
 - Add a quiz mode where you have to type the answer and it gives you feedback after each question
