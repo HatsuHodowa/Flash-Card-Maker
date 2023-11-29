@@ -66,5 +66,9 @@ class Controller:
     def prompt_practice(self):
         self.prompt_load_set(self.view.set_window, "practice_menu")
 
+    def start_quiz(self, subset, to_flip, to_shuffle):
+        quiz = self.model.create_quiz(subset, to_flip, to_shuffle)
+        self.view.set_window("practice_quiz", quiz)
+
 # starting
 Controller()

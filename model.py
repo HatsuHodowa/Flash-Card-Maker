@@ -86,3 +86,6 @@ class Model:
                 
             # writing file
             f.write(file_content)
+
+    def create_quiz(self, subset, to_flip, to_shuffle):
+        pass # TODO

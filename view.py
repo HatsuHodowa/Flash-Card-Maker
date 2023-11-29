@@ -433,14 +433,15 @@ class View:
         name_label = Label(self.window, bg=self.background, fg=self.foreground, text=set_name, font=self.subheading_font)
 
         range_label = Label(self.window, bg=self.background, fg=self.foreground, text="Range:", font=self.normal_font)
-        range_entry = Entry(self.window, bg=self.middleground, fg=self.foreground, textvariable=current_range, font=self.normal_font, width=10)
+        range_entry = Entry(self.window, bg=self.middleground, fg=self.foreground, textvariable=current_range, font=self.normal_font, width=15)
         flipped_label = Label(self.window, bg=self.background, fg=self.foreground, text="Cards Flipped:", font=self.normal_font)
-        flip_button = Button(self.window, bg="red", fg=self.foreground, text="False", font=self.normal_font)
-        shuffle_label = Label(self.window, bg=self.background, fg=self.foreground, text="Shuffled:", font=self.normal_font)
-        shuffle_button = Button(self.window, bg="green", fg=self.foreground, text="True", font=self.normal_font)
+        flip_button = Button(self.window, bg="red", fg=self.foreground, text="False", font=self.normal_font, width=15)
+        shuffle_label = Label(self.window, bg=self.background, fg=self.foreground, text="Shuffled:", font=self.normal_font, width=15)
+        shuffle_button = Button(self.window, bg="green", fg=self.foreground, text="True", font=self.normal_font, width=15)
 
         reset_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Reset", font=self.normal_font)
         back_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Back", font=self.normal_font, command=self.back_button)
+        start_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Start", font=self.normal_font)
 
         # gridding window items
         title.grid(row=0, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
@@ -453,8 +454,9 @@ class View:
         shuffle_label.grid(row=4, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
         shuffle_button.grid(row=4, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
 
-        back_button.grid(row=5, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
         reset_button.grid(row=5, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        back_button.grid(row=6, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        start_button.grid(row=6, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
 
         # button functions
         def on_range_changed(var, index, mode):
@@ -469,6 +471,26 @@ class View:
         def on_reset_button():
             self.set_window("practice_menu")
 
+        def on_start_button():
+            
+            # finding first and second indices
+            subset_split = current_range.get().split("-")
+            first_index, second_index = None, None
+            if len(subset_split) >= 2:
+                first_index = int(subset_split[0])
+                second_index = int(subset_split[1])
+            else:
+                first_index = 0
+                second_index = len(set_data)
+
+            # variables
+            subset = (first_index - 1, second_index)
+            to_flip = flip_button.cget("text") == "True"
+            to_shuffle = shuffle_button.cget("text") == "True"
+
+            # starting quiz
+            self.controller.start_quiz(subset, to_flip, to_shuffle)
+        
         # configuration
         current_range.set(f"1-{len(set_data)}")
         current_range.trace("w", on_range_changed)
@@ -476,6 +498,10 @@ class View:
         flip_button.config(command=on_flip_button)
         shuffle_button.config(command=on_shuffle_button)
         reset_button.config(command=on_reset_button)
+        start_button.config(command=on_start_button)
+
+    def practice_quiz(self, quiz):
+        pass # TODO
 
     def are_you_sure(self, prompt, yes_callback, no_callback):
 
