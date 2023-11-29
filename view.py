@@ -254,7 +254,7 @@ class View:
 
         # creating window items
         title = Label(self.window, bg=self.background, fg=self.foreground, text=self.controller.model.current_set_name, font=self.heading_font)
-        card_display = Button(self.window, bg=self.foreground, fg=self.background, text="No current card", font=self.subheading_font, height=5, width=15)
+        card_display = Button(self.window, bg=self.foreground, fg=self.background, text="No current card", wraplength=250, font=self.subheading_font, height=5, width=15)
 
         card_index = Label(self.window, bg=self.background, fg=self.foreground, text=f"Card 1 / {last_card + 1}", font=self.normal_font)
         card_side = Label(self.window, bg=self.background, fg=self.foreground, text="Side: Front", font=self.normal_font)
