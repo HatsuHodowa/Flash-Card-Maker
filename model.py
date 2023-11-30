@@ -88,4 +88,14 @@ class Model:
             f.write(file_content)
 
     def create_quiz(self, subset, to_flip, to_shuffle):
-        pass # TODO
+
+        # creating quiz data
+        quiz_data = self.current_set[subset[0]:subset[1]]
+        if to_flip:
+            quiz_data = self.flip_set(quiz_data)
+        if to_shuffle:
+            quiz_data = self.shuffle_set(quiz_data)
+
+        # returning quiz
+        return quiz_data
+        

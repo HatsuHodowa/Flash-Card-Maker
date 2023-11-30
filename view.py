@@ -33,6 +33,18 @@ class View:
         self.card_front_text = "#000000"
         self.card_back_text= "#ffffff"
 
+        self.widget_padding = {"padx":self.widget_padx, "pady":self.widget_pady}
+        self.widget_grid_kwargs = {"sticky":NSEW, "padx":self.widget_padx, "pady":self.widget_pady}
+
+        self.title_kwargs = {"bg":self.background, "fg":self.foreground, "font":self.heading_font}
+        self.subtitle_kwargs = {"bg":self.background, "fg":self.foreground, "font":self.subheading_font}
+        self.label_kwargs = {"bg":self.background, "fg":self.foreground, "font":self.normal_font}
+        self.error_kwargs = {"bg":self.background, "fg":self.error, "font":self.normal_font, "justify":CENTER}
+
+        self.button_kwargs = {"bg":self.middleground, "fg":self.foreground, "font":self.normal_font, "width":15}
+        self.big_button_kwargs = {"bg":self.middleground, "fg":self.foreground, "font":self.subheading_font}
+        self.entry_kwargs = {"bg":self.middleground, "fg":self.foreground, "font":self.normal_font, "width":15}
+
         # other attributes
         self.current_card = None
         self.current_side = False
@@ -85,7 +97,7 @@ class View:
             self.clear_error()
 
         # creating and packing error
-        self.error_label = Label(self.window, bg=self.background, fg=self.error, text=message, font=self.normal_font, justify=CENTER)
+        self.error_label = Label(self.window, **self.error_kwargs, text=message)
         self.error_label.grid(row=100, column=0, columnspan=100)
 
     def clear_error(self):
@@ -130,53 +142,53 @@ class View:
     def main_menu(self):
 
         # creating window items
-        title = Label(self.window, bg=self.background, fg=self.foreground, text="Flash Card Maker", font=self.heading_font)
-        create_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Create New Set", font=self.subheading_font, command=self.controller.prompt_new_set)
-        open_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Load Previous Set", font=self.subheading_font, command=self.controller.prompt_load_set)
-        practice_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Practice Set", font=self.subheading_font, command=self.controller.prompt_practice)
+        title = Label(self.window, text="Flash Card Maker", **self.title_kwargs)
+        create_button = Button(self.window, text="Create New Set", **self.big_button_kwargs, command=self.controller.prompt_new_set)
+        open_button = Button(self.window, text="Load Previous Set", **self.big_button_kwargs, command=self.controller.prompt_load_set)
+        practice_button = Button(self.window, text="Practice Set", **self.big_button_kwargs, command=self.controller.prompt_practice)
 
         # adding window items
-        title.grid(row=0, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        create_button.grid(row=1, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        open_button.grid(row=2, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        practice_button.grid(row=3, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        title.grid(row=0, column=1, **self.widget_grid_kwargs)
+        create_button.grid(row=1, column=1, **self.widget_grid_kwargs)
+        open_button.grid(row=2, column=1, **self.widget_grid_kwargs)
+        practice_button.grid(row=3, column=1, **self.widget_grid_kwargs)
 
     def new_set_prompt(self, set_data=None, name=None):
 
         # creating window items
-        title = Label(self.window, bg=self.background, fg=self.foreground, text="Create New Card Set", font=self.heading_font)
-        set_name_title = Label(self.window, bg=self.background, fg=self.foreground, text="Set Name", font=self.normal_font)
-        set_name = Entry(self.window, bg=self.middleground, fg=self.foreground, font=self.normal_font)
+        title = Label(self.window, text="Create New Card Set", **self.title_kwargs)
+        set_name_title = Label(self.window, **self.label_kwargs, text="Set Name")
+        set_name = Entry(self.window, **self.entry_kwargs)
 
-        card_list = Listbox(self.window, bg=self.middleground, fg=self.foreground, font=self.normal_font, height=6)
+        card_list = Listbox(self.window, **self.entry_kwargs, height=6)
         scrollbar = Scrollbar(self.window)
 
-        card_key_title = Label(self.window, bg=self.background, fg=self.foreground, text="Term", font=self.normal_font)
-        card_key = Entry(self.window, bg=self.middleground, fg=self.foreground, font=self.normal_font)
-        card_value_title = Label(self.window, bg=self.background, fg=self.foreground, text="Definition", font=self.normal_font)
-        card_value = Entry(self.window, bg=self.middleground, fg=self.foreground, font=self.normal_font)
+        card_key_title = Label(self.window, **self.label_kwargs, text="Term")
+        card_key = Entry(self.window, **self.entry_kwargs)
+        card_value_title = Label(self.window, **self.label_kwargs, text="Definition")
+        card_value = Entry(self.window, **self.entry_kwargs)
 
-        delete_buton = Button(self.window, bg=self.middleground, fg=self.foreground, text="Delete Card", font=self.normal_font)
-        new_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Create Card", font=self.normal_font)
-        cancel_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Cancel", font=self.normal_font, command=self.back_button)
-        confirm_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Confirm", font=self.normal_font)
+        delete_buton = Button(self.window, **self.button_kwargs, text="Delete Card")
+        new_button = Button(self.window, **self.button_kwargs, text="Create Card")
+        cancel_button = Button(self.window, **self.button_kwargs, text="Cancel", command=self.back_button)
+        confirm_button = Button(self.window, **self.button_kwargs, text="Confirm")
 
         # adding window items
-        title.grid(row=0, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        set_name_title.grid(row=1, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        set_name.grid(row=1, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        card_list.grid(row=2, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
+        set_name_title.grid(row=1, column=0, **self.widget_grid_kwargs)
+        set_name.grid(row=1, column=1, **self.widget_grid_kwargs)
+        card_list.grid(row=2, column=0, columnspan=2, **self.widget_grid_kwargs)
         scrollbar.grid(row=2, column=2, sticky=NSEW, pady=self.widget_pady)
 
-        card_key_title.grid(row=3, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        card_key.grid(row=3, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        card_value_title.grid(row=4, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        card_value.grid(row=4, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        card_key_title.grid(row=3, column=0, **self.widget_grid_kwargs)
+        card_key.grid(row=3, column=1, **self.widget_grid_kwargs)
+        card_value_title.grid(row=4, column=0, **self.widget_grid_kwargs)
+        card_value.grid(row=4, column=1, **self.widget_grid_kwargs)
 
-        delete_buton.grid(row=5, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        new_button.grid(row=5, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        cancel_button.grid(row=6, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        confirm_button.grid(row=6, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        delete_buton.grid(row=5, column=0, **self.widget_grid_kwargs)
+        new_button.grid(row=5, column=1, **self.widget_grid_kwargs)
+        cancel_button.grid(row=6, column=0, **self.widget_grid_kwargs)
+        confirm_button.grid(row=6, column=1, **self.widget_grid_kwargs)
 
         # loading current set info
         if name != None:
@@ -253,36 +265,36 @@ class View:
         subset_text = StringVar()
 
         # creating window items
-        title = Label(self.window, bg=self.background, fg=self.foreground, text=self.controller.model.current_set_name, font=self.heading_font)
-        card_display = Button(self.window, bg=self.foreground, fg=self.background, text="No current card", wraplength=250, font=self.subheading_font, height=5, width=15)
+        title = Label(self.window, text=self.controller.model.current_set_name, **self.title_kwargs)
+        card_display = Button(self.window, bg=self.foreground, fg=self.background, font=self.subheading_font, text="No current card", wraplength=250, height=5, width=15)
 
-        card_index = Label(self.window, bg=self.background, fg=self.foreground, text=f"Card 1 / {last_card + 1}", font=self.normal_font)
-        card_side = Label(self.window, bg=self.background, fg=self.foreground, text="Side: Front", font=self.normal_font)
-        subset = Entry(self.window, bg=self.middleground, fg=self.foreground, font=self.normal_font, textvariable=subset_text, width=10)
+        card_index = Label(self.window, **self.label_kwargs, text=f"Card 1 / {last_card + 1}")
+        card_side = Label(self.window, **self.label_kwargs, text="Side: Front")
+        subset = Entry(self.window, **self.entry_kwargs, textvariable=subset_text)
 
-        subset_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Set Subset", font=self.normal_font, width=10)
-        next_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Next", font=self.normal_font, width=10)
-        prev_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Previous", font=self.normal_font, width=10)
-        flip_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Flip Cards", font=self.normal_font, width=10)
-        shuffle_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Shuffle", font=self.normal_font, width=10)
-        back_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Back", font=self.normal_font, command=self.back_button)
-        reset_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Reset", font=self.normal_font)
+        subset_button = Button(self.window, **self.button_kwargs, text="Set Subset")
+        next_button = Button(self.window, **self.button_kwargs, text="Next")
+        prev_button = Button(self.window, **self.button_kwargs, text="Previous")
+        flip_button = Button(self.window, **self.button_kwargs, text="Flip Cards")
+        shuffle_button = Button(self.window, **self.button_kwargs, text="Shuffle")
+        back_button = Button(self.window, **self.button_kwargs, text="Back", command=self.back_button)
+        reset_button = Button(self.window, **self.button_kwargs, text="Reset")
 
         # adding window items
-        title.grid(row=0, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        card_display.grid(row=1, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
+        card_display.grid(row=1, column=0, columnspan=2, **self.widget_grid_kwargs)
 
-        card_index.grid(row=2, column=0, sticky=E, padx=self.widget_padx, pady=self.widget_pady)
-        card_side.grid(row=2, column=1, sticky=W, padx=self.widget_padx, pady=self.widget_pady)
-        subset.grid(row=3, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        card_index.grid(row=2, column=0, sticky=E, **self.widget_padding)
+        card_side.grid(row=2, column=1, sticky=W, **self.widget_padding)
+        subset.grid(row=3, column=0, **self.widget_grid_kwargs)
 
-        subset_button.grid(row=3, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        next_button.grid(row=4, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        prev_button.grid(row=4, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        flip_button.grid(row=5, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        shuffle_button.grid(row=5, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        back_button.grid(row=6, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        reset_button.grid(row=6, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        subset_button.grid(row=3, column=1, **self.widget_grid_kwargs)
+        next_button.grid(row=4, column=1, **self.widget_grid_kwargs)
+        prev_button.grid(row=4, column=0, **self.widget_grid_kwargs)
+        flip_button.grid(row=5, column=0, **self.widget_grid_kwargs)
+        shuffle_button.grid(row=5, column=1, **self.widget_grid_kwargs)
+        back_button.grid(row=6, column=0, **self.widget_grid_kwargs)
+        reset_button.grid(row=6, column=1, **self.widget_grid_kwargs)
 
         # button functions
         def update_card():
@@ -364,24 +376,24 @@ class View:
     def load_set(self, all_files, callback=None, *callback_args):
 
         # creating window items
-        title = Label(self.window, bg=self.background, fg=self.foreground, text="Load from file", font=self.heading_font)
-        set_list = Listbox(self.window, bg=self.middleground, fg=self.foreground, font=self.normal_font, height=6)
+        title = Label(self.window, text="Load from file", **self.title_kwargs)
+        set_list = Listbox(self.window, **self.entry_kwargs, height=6)
         scrollbar = Scrollbar(self.window)
 
-        load_file = Button(self.window, bg=self.middleground, fg=self.foreground, text="Load Selected", font=self.normal_font, width=15)
-        edit_file = Button(self.window, bg=self.middleground, fg=self.foreground, text="Edit Selected", font=self.normal_font, width=15)
-        delete_file = Button(self.window, bg=self.middleground, fg=self.foreground, text="Delete Selected", font=self.normal_font, width=15)
-        back_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Cancel", font=self.normal_font, width=15, command=self.back_button)
+        load_file = Button(self.window, **self.button_kwargs, text="Load Selected")
+        edit_file = Button(self.window, **self.button_kwargs, text="Edit Selected")
+        delete_file = Button(self.window, **self.button_kwargs, text="Delete Selected")
+        back_button = Button(self.window, **self.button_kwargs, text="Cancel", command=self.back_button)
 
         # adding window items
-        title.grid(row=0, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        set_list.grid(row=1, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
+        set_list.grid(row=1, column=0, columnspan=2, **self.widget_grid_kwargs)
         scrollbar.grid(row=1, column=2, sticky=NSEW, pady=self.widget_pady)
         
-        edit_file.grid(row=2, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        load_file.grid(row=2, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        back_button.grid(row=3, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        delete_file.grid(row=3, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        edit_file.grid(row=2, column=0, **self.widget_grid_kwargs)
+        load_file.grid(row=2, column=1, **self.widget_grid_kwargs)
+        back_button.grid(row=3, column=0, **self.widget_grid_kwargs)
+        delete_file.grid(row=3, column=1, **self.widget_grid_kwargs)
 
         # adding files to list
         for file in all_files:
@@ -429,34 +441,34 @@ class View:
         current_range = StringVar()
 
         # creating window items
-        title = Label(self.window, bg=self.background, fg=self.foreground, text="Practice Set", font=self.heading_font)
-        name_label = Label(self.window, bg=self.background, fg=self.foreground, text=set_name, font=self.subheading_font)
+        title = Label(self.window, text="Practice Set", **self.title_kwargs)
+        name_label = Label(self.window, text=set_name, **self.subtitle_kwargs)
 
-        range_label = Label(self.window, bg=self.background, fg=self.foreground, text="Range:", font=self.normal_font)
-        range_entry = Entry(self.window, bg=self.middleground, fg=self.foreground, textvariable=current_range, font=self.normal_font, width=15)
-        flipped_label = Label(self.window, bg=self.background, fg=self.foreground, text="Cards Flipped:", font=self.normal_font)
-        flip_button = Button(self.window, bg="red", fg=self.foreground, text="False", font=self.normal_font, width=15)
-        shuffle_label = Label(self.window, bg=self.background, fg=self.foreground, text="Shuffled:", font=self.normal_font, width=15)
-        shuffle_button = Button(self.window, bg="green", fg=self.foreground, text="True", font=self.normal_font, width=15)
+        range_label = Label(self.window, **self.label_kwargs, text="Range:")
+        range_entry = Entry(self.window, **self.entry_kwargs, textvariable=current_range)
+        flipped_label = Label(self.window, **self.label_kwargs, text="Cards Flipped:")
+        flip_button = Button(self.window, bg="red", fg=self.foreground, font=self.normal_font, text="False", width=15)
+        shuffle_label = Label(self.window, **self.label_kwargs, text="Shuffled:")
+        shuffle_button = Button(self.window, bg="green", fg=self.foreground, font=self.normal_font, text="True", width=15)
 
-        reset_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Reset", font=self.normal_font)
-        back_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Back", font=self.normal_font, command=self.back_button)
-        start_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Start", font=self.normal_font)
+        reset_button = Button(self.window, **self.button_kwargs, text="Reset")
+        back_button = Button(self.window, **self.button_kwargs, text="Back", command=self.back_button)
+        start_button = Button(self.window, **self.button_kwargs, text="Start")
 
         # gridding window items
-        title.grid(row=0, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        name_label.grid(row=1, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
+        name_label.grid(row=1, column=0, columnspan=2, **self.widget_grid_kwargs)
 
-        range_label.grid(row=2, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        range_entry.grid(row=2, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        flipped_label.grid(row=3, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        flip_button.grid(row=3, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        shuffle_label.grid(row=4, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        shuffle_button.grid(row=4, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        range_label.grid(row=2, column=0, **self.widget_grid_kwargs)
+        range_entry.grid(row=2, column=1, **self.widget_grid_kwargs)
+        flipped_label.grid(row=3, column=0, **self.widget_grid_kwargs)
+        flip_button.grid(row=3, column=1, **self.widget_grid_kwargs)
+        shuffle_label.grid(row=4, column=0, **self.widget_grid_kwargs)
+        shuffle_button.grid(row=4, column=1, **self.widget_grid_kwargs)
 
-        reset_button.grid(row=5, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        back_button.grid(row=6, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        start_button.grid(row=6, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        reset_button.grid(row=5, column=1, **self.widget_grid_kwargs)
+        back_button.grid(row=6, column=0, **self.widget_grid_kwargs)
+        start_button.grid(row=6, column=1, **self.widget_grid_kwargs)
 
         # button functions
         def on_range_changed(var, index, mode):
@@ -500,25 +512,56 @@ class View:
         reset_button.config(command=on_reset_button)
         start_button.config(command=on_start_button)
 
-    def practice_quiz(self, quiz):
-        pass # TODO
+    def practice_quiz(self, quiz_data):
+
+        # variables
+        set_name = self.controller.model.current_set_name
+        current_question = 1
+        last_question = len(quiz_data)
+        current_answer = StringVar()
+        
+        # creating window items
+        title = Label(self.window, text=f"Quiz: {set_name}", **self.title_kwargs)
+        question_number = Label(self.window, **self.label_kwargs, text=f"Question {current_question}/{last_question}")
+
+        question_label = Label(self.window, **self.label_kwargs, text="None", wraplength=250)
+        answer_label = Label(self.window, **self.label_kwargs, text="Answer:")
+        answer_entry = Entry(self.window, **self.entry_kwargs, textvariable=current_answer)
+        submit_button = Button(self.window, **self.button_kwargs, text="Submit")
+
+        skip_button = Button(self.window, **self.button_kwargs, text="Skip")
+        back_button = Button(self.window, **self.button_kwargs, text="Back", command=self.back_button)
+
+        # positioning window items
+        title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
+        question_number.grid(row=1, column=0, columnspan=2, **self.widget_grid_kwargs)
+
+        question_label.grid(row=2, column=0, columnspan=2, **self.widget_grid_kwargs)
+        answer_label.grid(row=3, column=0, **self.widget_grid_kwargs)
+        answer_entry.grid(row=3, column=1, **self.widget_grid_kwargs)
+        submit_button.grid(row=4, column=0, columnspan=2, **self.widget_grid_kwargs)
+
+        skip_button.grid(row=5, column=0, **self.widget_grid_kwargs)
+        back_button.grid(row=5, column=1, **self.widget_grid_kwargs)
+
+        # TODO - set up quiz
 
     def are_you_sure(self, prompt, yes_callback, no_callback):
 
         # creating window items
-        title = Label(self.window, bg=self.background, fg=self.foreground, text="Are you sure?", font=self.heading_font)
-        message = Label(self.window, bg=self.background, fg=self.foreground, text=prompt, font=self.subheading_font)
+        title = Label(self.window, text="Are you sure?", **self.title_kwargs)
+        message = Label(self.window, text=prompt, **self.subtitle_kwargs)
 
-        yes_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="Yes", font=self.normal_font, width=15, command=yes_callback)
-        no_button = Button(self.window, bg=self.middleground, fg=self.foreground, text="No", font=self.normal_font, width=15, command=no_callback)
-        warning = Label(self.window, bg=self.background, fg=self.foreground, text="You cannot undo this action.", font=self.normal_font)
+        yes_button = Button(self.window, **self.button_kwargs, text="Yes", command=yes_callback)
+        no_button = Button(self.window, **self.button_kwargs, text="No", command=no_callback)
+        warning = Label(self.window, **self.label_kwargs, text="You cannot undo this action.")
 
         # placing window items
-        title.grid(row=0, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        message.grid(row=1, column=0, columnspan=2, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
+        message.grid(row=1, column=0, columnspan=2, **self.widget_grid_kwargs)
 
-        yes_button.grid(row=2, column=0, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
-        no_button.grid(row=2, column=1, sticky=NSEW, padx=self.widget_padx, pady=self.widget_pady)
+        yes_button.grid(row=2, column=0, **self.widget_grid_kwargs)
+        no_button.grid(row=2, column=1, **self.widget_grid_kwargs)
         warning.grid(row=3, column=0, columnspan=2, sticky=NSEW, padx=self.widget_pady, pady=self.widget_pady)
 
     def update(self):
