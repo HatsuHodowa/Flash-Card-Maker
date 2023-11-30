@@ -35,15 +35,20 @@ class View:
 
         self.widget_padding = {"padx":self.widget_padx, "pady":self.widget_pady}
         self.widget_grid_kwargs = {"sticky":NSEW, "padx":self.widget_padx, "pady":self.widget_pady}
+        self.spacer_kwargs = {"bg":self.background, "fg":self.foreground, "text":"", "height":2}
 
         self.title_kwargs = {"bg":self.background, "fg":self.foreground, "font":self.heading_font}
         self.subtitle_kwargs = {"bg":self.background, "fg":self.foreground, "font":self.subheading_font}
         self.label_kwargs = {"bg":self.background, "fg":self.foreground, "font":self.normal_font}
         self.error_kwargs = {"bg":self.background, "fg":self.error, "font":self.normal_font, "justify":CENTER}
+        self.entry_kwargs = {"bg":self.middleground, "fg":self.foreground, "font":self.normal_font, "width":15}
 
         self.button_kwargs = {"bg":self.middleground, "fg":self.foreground, "font":self.normal_font, "width":15}
         self.big_button_kwargs = {"bg":self.middleground, "fg":self.foreground, "font":self.subheading_font}
-        self.entry_kwargs = {"bg":self.middleground, "fg":self.foreground, "font":self.normal_font, "width":15}
+        self.back_button_kwargs = {"bg":"#ab3c3c", "fg":self.foreground, "font":self.normal_font, "width":15, "command":self.back_button}
+        self.reset_button_kwargs = {"bg":"#996b32", "fg":self.foreground, "font":self.normal_font, "width":15, "command":self.reset_button}
+        self.red_button_kwargs = {"bg":"#ab3c3c", "fg":self.foreground, "font":self.normal_font, "width":15}
+        self.green_button_kwargs = {"bg":"#3cab4b", "fg":self.foreground, "font":self.normal_font, "width":15}
 
         # other attributes
         self.current_card = None
@@ -90,6 +95,16 @@ class View:
         else:
             self.set_window("main_menu")
 
+    def reset_button(self):
+
+        # checking history
+        if len(self.window_history) >= 1:
+            this_window = self.window_history[-1]
+            this_window_args = self.window_args_history[-1]
+
+            # re-opening
+            self.set_window(this_window, *this_window_args, history_disabled=True)
+
     def create_error(self, message="An error ocurred", error_time=2):
 
         # destroying previous error
@@ -135,9 +150,9 @@ class View:
 
     def boolean_button_toggle(self, button):
         if button.cget("text") == "True":
-            button.config(text="False", bg="red")
+            button.config(text="False", **self.red_button_kwargs)
         else:
-            button.config(text="True", bg="green")
+            button.config(text="True", **self.green_button_kwargs)
 
     def main_menu(self):
 
@@ -170,8 +185,8 @@ class View:
 
         delete_buton = Button(self.window, **self.button_kwargs, text="Delete Card")
         new_button = Button(self.window, **self.button_kwargs, text="Create Card")
-        cancel_button = Button(self.window, **self.button_kwargs, text="Cancel", command=self.back_button)
-        confirm_button = Button(self.window, **self.button_kwargs, text="Confirm")
+        cancel_button = Button(self.window, **self.back_button_kwargs, text="Cancel")
+        confirm_button = Button(self.window, **self.green_button_kwargs, text="Confirm")
 
         # adding window items
         title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
@@ -277,8 +292,8 @@ class View:
         prev_button = Button(self.window, **self.button_kwargs, text="Previous")
         flip_button = Button(self.window, **self.button_kwargs, text="Flip Cards")
         shuffle_button = Button(self.window, **self.button_kwargs, text="Shuffle")
-        back_button = Button(self.window, **self.button_kwargs, text="Back", command=self.back_button)
-        reset_button = Button(self.window, **self.button_kwargs, text="Reset")
+        back_button = Button(self.window, **self.back_button_kwargs, text="Back")
+        reset_button = Button(self.window, **self.reset_button_kwargs, text="Reset")
 
         # adding window items
         title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
@@ -347,9 +362,6 @@ class View:
             flipped_set = self.controller.model.flip_set(set_data)
             self.set_window("display_set", flipped_set, history_disabled=True)
 
-        def on_reset():
-            self.set_window("display_set", history_disabled=True)
-
         def on_card_press():
             self.current_side = not self.current_side
             update_card()
@@ -368,7 +380,6 @@ class View:
         shuffle_button.config(command=on_set_shuffle)
         card_display.config(command=on_card_press)
         flip_button.config(command=on_set_flip)
-        reset_button.config(command=on_reset)
 
         subset_text.set(f"1-{len(set_data)}")
         subset_text.trace("w", on_subset_changed)
@@ -380,10 +391,10 @@ class View:
         set_list = Listbox(self.window, **self.entry_kwargs, height=6)
         scrollbar = Scrollbar(self.window)
 
-        load_file = Button(self.window, **self.button_kwargs, text="Load Selected")
         edit_file = Button(self.window, **self.button_kwargs, text="Edit Selected")
         delete_file = Button(self.window, **self.button_kwargs, text="Delete Selected")
-        back_button = Button(self.window, **self.button_kwargs, text="Cancel", command=self.back_button)
+        load_file = Button(self.window, **self.green_button_kwargs, text="Load Selected")
+        back_button = Button(self.window, **self.back_button_kwargs, text="Cancel")
 
         # adding window items
         title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
@@ -391,9 +402,9 @@ class View:
         scrollbar.grid(row=1, column=2, sticky=NSEW, pady=self.widget_pady)
         
         edit_file.grid(row=2, column=0, **self.widget_grid_kwargs)
-        load_file.grid(row=2, column=1, **self.widget_grid_kwargs)
+        delete_file.grid(row=2, column=1, **self.widget_grid_kwargs)
         back_button.grid(row=3, column=0, **self.widget_grid_kwargs)
-        delete_file.grid(row=3, column=1, **self.widget_grid_kwargs)
+        load_file.grid(row=3, column=1, **self.widget_grid_kwargs)
 
         # adding files to list
         for file in all_files:
@@ -447,13 +458,14 @@ class View:
         range_label = Label(self.window, **self.label_kwargs, text="Range:")
         range_entry = Entry(self.window, **self.entry_kwargs, textvariable=current_range)
         flipped_label = Label(self.window, **self.label_kwargs, text="Cards Flipped:")
-        flip_button = Button(self.window, bg="red", fg=self.foreground, font=self.normal_font, text="False", width=15)
+        flip_button = Button(self.window, **self.red_button_kwargs, text="False")
         shuffle_label = Label(self.window, **self.label_kwargs, text="Shuffled:")
-        shuffle_button = Button(self.window, bg="green", fg=self.foreground, font=self.normal_font, text="True", width=15)
+        shuffle_button = Button(self.window, **self.green_button_kwargs, text="True")
 
-        reset_button = Button(self.window, **self.button_kwargs, text="Reset")
-        back_button = Button(self.window, **self.button_kwargs, text="Back", command=self.back_button)
-        start_button = Button(self.window, **self.button_kwargs, text="Start")
+        spacer_label = Label(self.window, **self.spacer_kwargs)
+        reset_button = Button(self.window, **self.reset_button_kwargs, text="Reset")
+        back_button = Button(self.window, **self.back_button_kwargs, text="Back")
+        start_button = Button(self.window, **self.green_button_kwargs, text="Start")
 
         # gridding window items
         title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
@@ -466,9 +478,10 @@ class View:
         shuffle_label.grid(row=4, column=0, **self.widget_grid_kwargs)
         shuffle_button.grid(row=4, column=1, **self.widget_grid_kwargs)
 
-        reset_button.grid(row=5, column=1, **self.widget_grid_kwargs)
-        back_button.grid(row=6, column=0, **self.widget_grid_kwargs)
-        start_button.grid(row=6, column=1, **self.widget_grid_kwargs)
+        spacer_label.grid(row=5, column=0, columnspan=2, **self.widget_grid_kwargs)
+        reset_button.grid(row=6, column=1, **self.widget_grid_kwargs)
+        back_button.grid(row=7, column=0, **self.widget_grid_kwargs)
+        start_button.grid(row=7, column=1, **self.widget_grid_kwargs)
 
         # button functions
         def on_range_changed(var, index, mode):
@@ -479,9 +492,6 @@ class View:
 
         def on_shuffle_button():
             self.boolean_button_toggle(shuffle_button)
-
-        def on_reset_button():
-            self.set_window("practice_menu")
 
         def on_start_button():
             
@@ -509,7 +519,6 @@ class View:
 
         flip_button.config(command=on_flip_button)
         shuffle_button.config(command=on_shuffle_button)
-        reset_button.config(command=on_reset_button)
         start_button.config(command=on_start_button)
 
     def practice_quiz(self, quiz_data):
@@ -524,25 +533,27 @@ class View:
         title = Label(self.window, text=f"Quiz: {set_name}", **self.title_kwargs)
         question_number = Label(self.window, **self.label_kwargs, text=f"Question {current_question}/{last_question}")
 
-        question_label = Label(self.window, **self.label_kwargs, text="None", wraplength=250)
+        question_label = Label(self.window, **self.subtitle_kwargs, text="None", wraplength=250)
         answer_label = Label(self.window, **self.label_kwargs, text="Answer:")
         answer_entry = Entry(self.window, **self.entry_kwargs, textvariable=current_answer)
-        submit_button = Button(self.window, **self.button_kwargs, text="Submit")
+        submit_button = Button(self.window, text="Submit", **self.green_button_kwargs)
 
-        skip_button = Button(self.window, **self.button_kwargs, text="Skip")
-        back_button = Button(self.window, **self.button_kwargs, text="Back", command=self.back_button)
+        prev_button = Button(self.window, **self.button_kwargs, text="Previous")
+        next_button = Button(self.window, **self.button_kwargs, text="Next")
+        back_button = Button(self.window, **self.back_button_kwargs, text="Back")
 
         # positioning window items
         title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
         question_number.grid(row=1, column=0, columnspan=2, **self.widget_grid_kwargs)
 
         question_label.grid(row=2, column=0, columnspan=2, **self.widget_grid_kwargs)
-        answer_label.grid(row=3, column=0, **self.widget_grid_kwargs)
-        answer_entry.grid(row=3, column=1, **self.widget_grid_kwargs)
-        submit_button.grid(row=4, column=0, columnspan=2, **self.widget_grid_kwargs)
+        answer_label.grid(row=3, column=0, columnspan=2, **self.widget_grid_kwargs)
+        answer_entry.grid(row=4, column=0, columnspan=2, **self.widget_grid_kwargs)
+        submit_button.grid(row=5, column=0, columnspan=2, **self.widget_grid_kwargs)
 
-        skip_button.grid(row=5, column=0, **self.widget_grid_kwargs)
-        back_button.grid(row=5, column=1, **self.widget_grid_kwargs)
+        prev_button.grid(row=6, column=0, **self.widget_grid_kwargs)
+        next_button.grid(row=6, column=1, **self.widget_grid_kwargs)
+        back_button.grid(row=7, column=0, **self.widget_grid_kwargs)
 
         # TODO - set up quiz
 
@@ -552,9 +563,9 @@ class View:
         title = Label(self.window, text="Are you sure?", **self.title_kwargs)
         message = Label(self.window, text=prompt, **self.subtitle_kwargs)
 
-        yes_button = Button(self.window, **self.button_kwargs, text="Yes", command=yes_callback)
-        no_button = Button(self.window, **self.button_kwargs, text="No", command=no_callback)
-        warning = Label(self.window, **self.label_kwargs, text="You cannot undo this action.")
+        yes_button = Button(self.window, **self.green_button_kwargs, text="Yes", command=yes_callback)
+        no_button = Button(self.window, **self.red_button_kwargs, text="No", command=no_callback)
+        warning = Label(self.window, **self.error_kwargs, text="You cannot undo this action.")
 
         # placing window items
         title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
