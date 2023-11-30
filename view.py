@@ -37,22 +37,23 @@ class View:
         self.widget_grid_kwargs = {"sticky":NSEW, "padx":self.widget_padx, "pady":self.widget_pady}
         self.spacer_kwargs = {"bg":self.background, "fg":self.foreground, "text":"", "height":2}
 
-        self.title_kwargs = {"bg":self.background, "fg":self.foreground, "font":self.heading_font}
-        self.subtitle_kwargs = {"bg":self.background, "fg":self.foreground, "font":self.subheading_font}
-        self.label_kwargs = {"bg":self.background, "fg":self.foreground, "font":self.normal_font}
+        self.title_kwargs = {"bg":self.background, "fg":"#66deff", "font":self.heading_font, "wraplength":450}
+        self.subtitle_kwargs = {"bg":self.background, "fg":self.foreground, "font":self.subheading_font, "wraplength":450}
+        self.label_kwargs = {"bg":self.background, "fg":self.foreground, "font":self.normal_font, "wraplength":250}
         self.error_kwargs = {"bg":self.background, "fg":self.error, "font":self.normal_font, "justify":CENTER}
         self.entry_kwargs = {"bg":self.middleground, "fg":self.foreground, "font":self.normal_font, "width":15}
 
         self.button_kwargs = {"bg":self.middleground, "fg":self.foreground, "font":self.normal_font, "width":15}
         self.big_button_kwargs = {"bg":self.middleground, "fg":self.foreground, "font":self.subheading_font}
         self.back_button_kwargs = {"bg":"#ab3c3c", "fg":self.foreground, "font":self.normal_font, "width":15, "command":self.back_button}
-        self.reset_button_kwargs = {"bg":"#996b32", "fg":self.foreground, "font":self.normal_font, "width":15, "command":self.reset_button}
+        self.reset_button_kwargs = {"bg":"#bd6d11", "fg":self.foreground, "font":self.normal_font, "width":15, "command":self.reset_button}
         self.red_button_kwargs = {"bg":"#ab3c3c", "fg":self.foreground, "font":self.normal_font, "width":15}
         self.green_button_kwargs = {"bg":"#3cab4b", "fg":self.foreground, "font":self.normal_font, "width":15}
 
         # other attributes
-        self.current_card = None
-        self.current_side = False
+        self._current_card = None
+        self._current_side = False
+        self._current_quiz_question = None
 
         self.window_history = []
         self.window_args_history = []
@@ -224,7 +225,7 @@ class View:
             value = card_value.get()
 
             if key == "" or value == "":
-                self.create_error("Missing term or definition")
+                self.create_error("Missing term or definition.")
                 return
             else:
                 self.clear_error()
@@ -237,7 +238,12 @@ class View:
             card_value.delete(0, END)
 
         def delete_card():
-            for i in card_list.curselection():
+            cur_select = card_list.curselection()
+            if len(cur_select) == 0:
+                self.create_error("No card was selected to delete.")
+                return
+
+            for i in cur_select:
                 card_list.delete(i)
 
         def confirm_set():
@@ -245,7 +251,7 @@ class View:
             # checking set name
             name = set_name.get()
             if name == "":
-                self.create_error("Missing card set name")
+                self.create_error("Missing card set name.")
                 return
             else:
                 self.clear_error()
@@ -274,13 +280,13 @@ class View:
             set_data = self.controller.model.current_set
 
         # other variables
-        self.current_card = 0
-        self.current_side = False
+        self._current_card = 0
+        self._current_side = False
         last_card = len(set_data) - 1
         subset_text = StringVar()
 
         # creating window items
-        title = Label(self.window, text=self.controller.model.current_set_name, **self.title_kwargs)
+        title = Label(self.window, text=self.controller.model.current_set_name, **self.subtitle_kwargs)
         card_display = Button(self.window, bg=self.foreground, fg=self.background, font=self.subheading_font, text="No current card", wraplength=250, height=5, width=15)
 
         card_index = Label(self.window, **self.label_kwargs, text=f"Card 1 / {last_card + 1}")
@@ -319,7 +325,7 @@ class View:
             foreground = None
             side_name = None
 
-            if self.current_side == False:
+            if self._current_side == False:
                 background = self.card_front_color
                 foreground = self.card_front_text
                 side_name = "Side: Front"
@@ -329,29 +335,29 @@ class View:
                 side_name = "Side: Back"
 
             # updating display
-            card_info = set_data[self.current_card]
-            card_display.config(text=card_info[self.current_side], bg=background, fg=foreground)
+            card_info = set_data[self._current_card]
+            card_display.config(text=card_info[self._current_side], bg=background, fg=foreground)
             card_side.config(text=side_name)
-            card_index.config(text=f"Card {self.current_card + 1} / {len(set_data)}")
+            card_index.config(text=f"Card {self._current_card + 1} / {len(set_data)}")
 
         update_card()
 
         def on_next_button():
-            if self.current_card + 1 <= last_card:
-                self.current_card += 1
+            if self._current_card + 1 <= last_card:
+                self._current_card += 1
             else:
-                self.current_card = 0
+                self._current_card = 0
 
-            self.current_side = False
+            self._current_side = False
             update_card()
 
         def on_prev_button():
-            if self.current_card - 1 >= 0:
-                self.current_card -= 1
+            if self._current_card - 1 >= 0:
+                self._current_card -= 1
             else:
-                self.current_card = last_card
+                self._current_card = last_card
 
-            self.current_side = False
+            self._current_side = False
             update_card()
 
         def on_set_shuffle():
@@ -363,7 +369,7 @@ class View:
             self.set_window("display_set", flipped_set, history_disabled=True)
 
         def on_card_press():
-            self.current_side = not self.current_side
+            self._current_side = not self._current_side
             update_card()
 
         def on_subset_changed(var, index, mode):
@@ -413,7 +419,7 @@ class View:
         # button functions
         def get_selected():
             selected = set_list.curselection()
-            if len(selected) > 0 :
+            if len(selected) > 0:
                 return set_list.get(selected[0])
 
         def on_load_file():
@@ -423,6 +429,8 @@ class View:
                     self.controller.load_set(selected + ".set", self.set_window, "display_set")
                 else:
                     self.controller.load_set(selected + ".set", callback, *callback_args)
+            else:
+                self.create_error("No file was selected to load.")
 
         def on_edit_file():
             selected = get_selected()
@@ -432,10 +440,16 @@ class View:
                 set_name = self.controller.model.current_set_name
 
                 self.controller.prompt_new_set(set_data, set_name)
+            
+            else:
+                self.create_error("No file was selected to edit.")
 
         def on_delete_file():
             selected = get_selected()
-            self.controller.prompt_delete_set(selected + ".set")
+            if selected != None:
+                self.controller.prompt_delete_set(selected + ".set")
+            else:
+                self.create_error("No file was selected to delete.")
 
         # configuration
         scrollbar.config(command=set_list.yview)
@@ -463,9 +477,9 @@ class View:
         shuffle_button = Button(self.window, **self.green_button_kwargs, text="True")
 
         spacer_label = Label(self.window, **self.spacer_kwargs)
-        reset_button = Button(self.window, **self.reset_button_kwargs, text="Reset")
+        reset_button = Button(self.window, **self.reset_button_kwargs, text="Reset Settings")
         back_button = Button(self.window, **self.back_button_kwargs, text="Back")
-        start_button = Button(self.window, **self.green_button_kwargs, text="Start")
+        start_button = Button(self.window, **self.green_button_kwargs, text="Start Quiz")
 
         # gridding window items
         title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
@@ -525,18 +539,20 @@ class View:
 
         # variables
         set_name = self.controller.model.current_set_name
-        current_question = 1
+        self._current_quiz_question = 1
         last_question = len(quiz_data)
         current_answer = StringVar()
         
         # creating window items
-        title = Label(self.window, text=f"Quiz: {set_name}", **self.title_kwargs)
-        question_number = Label(self.window, **self.label_kwargs, text=f"Question {current_question}/{last_question}")
+        title = Label(self.window, text=f"Quiz", **self.title_kwargs)
+        quiz_name = Label(self.window, text=set_name, **self.subtitle_kwargs)
+        question_number = Label(self.window, **self.label_kwargs, text=f"Question 1/{last_question}")
 
-        question_label = Label(self.window, **self.subtitle_kwargs, text="None", wraplength=250)
+        question_label = Label(self.window, **self.subtitle_kwargs, text="None")
         answer_label = Label(self.window, **self.label_kwargs, text="Answer:")
         answer_entry = Entry(self.window, **self.entry_kwargs, textvariable=current_answer)
-        submit_button = Button(self.window, text="Submit", **self.green_button_kwargs)
+        check_button = Button(self.window, text="Check Answer", **self.green_button_kwargs)
+        correct_label = Label(self.window, **self.label_kwargs, text="")
 
         prev_button = Button(self.window, **self.button_kwargs, text="Previous")
         next_button = Button(self.window, **self.button_kwargs, text="Next")
@@ -544,18 +560,62 @@ class View:
 
         # positioning window items
         title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
-        question_number.grid(row=1, column=0, columnspan=2, **self.widget_grid_kwargs)
+        quiz_name.grid(row=1, column=0, columnspan=2, **self.widget_grid_kwargs)
+        question_number.grid(row=2, column=0, columnspan=2, **self.widget_grid_kwargs)
 
-        question_label.grid(row=2, column=0, columnspan=2, **self.widget_grid_kwargs)
-        answer_label.grid(row=3, column=0, columnspan=2, **self.widget_grid_kwargs)
-        answer_entry.grid(row=4, column=0, columnspan=2, **self.widget_grid_kwargs)
-        submit_button.grid(row=5, column=0, columnspan=2, **self.widget_grid_kwargs)
+        question_label.grid(row=3, column=0, columnspan=2, **self.widget_grid_kwargs)
+        answer_label.grid(row=4, column=0, columnspan=2, **self.widget_grid_kwargs)
+        answer_entry.grid(row=5, column=0, columnspan=2, **self.widget_grid_kwargs)
+        check_button.grid(row=6, column=0, columnspan=2, **self.widget_grid_kwargs)
 
-        prev_button.grid(row=6, column=0, **self.widget_grid_kwargs)
-        next_button.grid(row=6, column=1, **self.widget_grid_kwargs)
-        back_button.grid(row=7, column=0, **self.widget_grid_kwargs)
+        correct_label.grid(row=7, column=0, columnspan=2, **self.widget_grid_kwargs)
+        prev_button.grid(row=8, column=0, **self.widget_grid_kwargs)
+        next_button.grid(row=8, column=1, **self.widget_grid_kwargs)
+        back_button.grid(row=9, column=0, **self.widget_grid_kwargs)
 
-        # TODO - set up quiz
+        # other functions 
+        def update_question():
+            question_label.config(text=quiz_data[self._current_quiz_question - 1][0])
+            question_number.config(text=f"Question {self._current_quiz_question}/{last_question}")
+            correct_label.config(text="")
+            current_answer.set("")
+
+        # button functions
+        def on_next_button():
+            if self._current_quiz_question < last_question:
+                self._current_quiz_question += 1
+            else:
+                self._current_quiz_question = 1
+
+            update_question()
+
+        def on_prev_button():
+            if self._current_quiz_question > 1:
+                self._current_quiz_question -= 1
+            else:
+                self._current_quiz_question = last_question
+
+            update_question()
+
+        def on_check_button():
+
+            # checking if correct
+            card = quiz_data[self._current_quiz_question - 1]
+            correct_answer = card[1]
+            is_correct = current_answer.get() == correct_answer
+
+            # providing feedback
+            if is_correct:
+                correct_label.config(text="Correct!", fg="green")
+            else:
+                correct_label.config(text="Incorrect!", fg="red")
+
+        # configuring
+        next_button.config(command=on_next_button)
+        prev_button.config(command=on_prev_button)
+        check_button.config(command=on_check_button)
+
+        update_question()
 
     def are_you_sure(self, prompt, yes_callback, no_callback):
 
@@ -563,16 +623,16 @@ class View:
         title = Label(self.window, text="Are you sure?", **self.title_kwargs)
         message = Label(self.window, text=prompt, **self.subtitle_kwargs)
 
-        yes_button = Button(self.window, **self.green_button_kwargs, text="Yes", command=yes_callback)
         no_button = Button(self.window, **self.red_button_kwargs, text="No", command=no_callback)
+        yes_button = Button(self.window, **self.green_button_kwargs, text="Yes", command=yes_callback)
         warning = Label(self.window, **self.error_kwargs, text="You cannot undo this action.")
 
         # placing window items
         title.grid(row=0, column=0, columnspan=2, **self.widget_grid_kwargs)
         message.grid(row=1, column=0, columnspan=2, **self.widget_grid_kwargs)
 
-        yes_button.grid(row=2, column=0, **self.widget_grid_kwargs)
-        no_button.grid(row=2, column=1, **self.widget_grid_kwargs)
+        no_button.grid(row=2, column=0, **self.widget_grid_kwargs)
+        yes_button.grid(row=2, column=1, **self.widget_grid_kwargs)
         warning.grid(row=3, column=0, columnspan=2, sticky=NSEW, padx=self.widget_pady, pady=self.widget_pady)
 
     def update(self):

@@ -47,10 +47,11 @@ class Controller:
         # double checking action
         def on_yes():
             os.remove("CardSets/" + set_name)
+            self.view.back_button()
             self.prompt_load_set()
 
         def on_no():
-            self.prompt_load_set()
+            self.view.back_button()
 
         self.view.set_window("are_you_sure", f"Do you want to delete the card set {set_name}?", on_yes, on_no)
 
