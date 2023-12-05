@@ -87,6 +87,13 @@ class View:
             self.window_history.append(to_set)
             self.window_args_history.append(args)
 
+    def reset_view(self):
+        while len(self.window_history) > 1:
+            print(self.window_history)
+            self.back_button()
+            
+        self.set_window("main_menu")
+
     def back_button(self):
 
         # checking history
@@ -259,15 +266,23 @@ class View:
             for i in cur_select:
                 card_list.delete(i)
 
-        def confirm_set():
-            
+        def get_name():
+
             # checking set name
             name = set_name.get()
             if name == "":
                 self.create_error("Missing card set name.")
-                return
+                return None
             else:
                 self.clear_error()
+                return name
+
+        def confirm_set():
+            
+            # checking set name
+            name = get_name()
+            if name == None:
+                return
             
             # getting set data
             set_data = []
@@ -282,6 +297,17 @@ class View:
             self.controller.create_new_set(set_data, name)
 
         def open_directly():
+            name = get_name()
+            if name == None:
+                return
+            
+            # saving
+            confirm_set()
+            set_data = self.controller.model.current_set
+            set_name = self.controller.model.current_set_name
+
+            # opening
+            self.set_window("new_set_prompt", set_data, set_name)
             self.set_window("direct_edit_set", set_data, set_name)
 
         # configuration
@@ -329,6 +355,21 @@ class View:
         scroll_vertical.config(command=text_edit.yview)
         scroll_horizontal.config(command=text_edit.xview)
         text_edit.config(xscrollcommand=scroll_horizontal.set, yscrollcommand=scroll_vertical.set)
+        text_edit.insert(END, self.controller.model.load_set_text())
+
+        # button functions
+        def on_confirm():
+            result = self.controller.model.apply_direct_edit(text_edit.get("1.0", "end-1c"))
+
+            if result == "Success":
+                self.back_button()
+                self.back_button()
+                self.set_window("new_set_prompt", self.controller.model.current_set, self.controller.model.current_set_name)
+            elif result == "Invalid":
+                self.create_error("Text was invalid. Double check commas and line breaks.")
+
+        # connecting buttons
+        confirm_button.config(command=on_confirm)
 
     def display_set(self, set_data=None):
         if set_data == None:
