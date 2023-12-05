@@ -20,3 +20,4 @@ A simple python program for creating flash card sets and studying them. I create
   - load set -> edit direct -> make changes -> cancel
   - load set -> make changes -> edit direct
 - Bug with deleting files and pressing "Cancel"
+- Bug with "confirm" not functioning like back button
