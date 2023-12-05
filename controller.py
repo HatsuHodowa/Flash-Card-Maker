@@ -47,7 +47,7 @@ class Controller:
         # double checking action
         def on_yes():
             os.remove("CardSets/" + set_name)
-            self.view.back_button()
+            self.view.reset_view()
             self.prompt_load_set()
 
         def on_no():
@@ -57,7 +57,8 @@ class Controller:
 
     def create_new_set(self, set_data, name):
         self.model.create_new_set(set_data, name)
-        self.view.set_window("main_menu")
+        self.view.reset_view()
+        self.prompt_load_set()
     
     def load_set(self, set_name, callback=None, *callback_args):
         self.model.load_set(set_name)

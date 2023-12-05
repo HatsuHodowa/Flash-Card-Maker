@@ -87,6 +87,39 @@ class Model:
             # writing file
             f.write(file_content)
 
+    def load_set_text(self, file_name=None):
+        if file_name == None:
+            file_name = self.current_set_name + ".set"
+
+        # saving
+        
+
+        # loading
+        with open("CardSets/" + file_name, "r", encoding="utf-8") as file:
+            return file.read()
+        
+    def apply_direct_edit(self, file_text, file_name=None):
+        if file_name == None:
+            file_name = self.current_set_name + ".set"
+
+        # checking validity
+        lines = file_text.split("\n")
+        for line in lines:
+            if line != "":
+                split = line.split(",")
+                if len(split) != 2:
+                    return "Invalid"
+
+        # saving to file
+        with open("CardSets/" + file_name, "w", encoding="utf-8") as file:
+            file.write(file_text)
+
+        # loading file again
+        self.load_set(file_name)
+
+        # success
+        return "Success"
+
     def create_quiz(self, subset, to_flip, to_shuffle):
 
         # creating quiz data
