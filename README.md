@@ -16,3 +16,6 @@ A simple python program for creating flash card sets and studying them. I create
 - Add a way to create folders for related cards sets
 - Add a way to open a specific folder when loading
 - Add option to edit cards directly with a big text Entry
+- Fix bugs in direct edit
+  - load set -> edit direct -> make changes -> cancel
+  - load set -> make changes -> edit direct
