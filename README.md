@@ -10,3 +10,4 @@ A simple python program for creating flash card sets and studying them. I create
 - Add point system and question tracking to quiz mode
 - Add a way to create folders for related cards sets
 - Add a way to open a specific folder when loading
+- Grading results for quiz mode
