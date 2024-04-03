@@ -1,10 +1,25 @@
 import random
+import os
 
 class Model:
     def __init__(self, controller):
         self.controller = controller
         self.current_set = None
         self.current_set_name = ""
+        self.sets_folder = "CardSets"
+        self.cache_folder = "Cache"
+
+        # creating folders
+        if not os.path.exists("CardSets"):
+            os.mkdir("CardSets")
+
+        if not os.path.exists("Cache"):
+            os.mkdir("Cache")
+
+    def change_folder_path(self, property_name: str, new_folder_path: str):
+        if getattr(self, property_name):
+            if os.path.exists(new_folder_path):
+                setattr(self, property_name, new_folder_path)
 
     def shuffle_set(self, set_data=None):
         if set_data == None:
@@ -64,7 +79,7 @@ class Model:
         set_data = []
 
         # finding file
-        with open("CardSets/" + file_name, "r", encoding="utf-8") as f:
+        with open(self.sets_folder + "/" + file_name, "r", encoding="utf-8") as f:
             for line in f.readlines():
                 line = line.replace("\n", "")
                 set_data.append(tuple(line.split(",")))
@@ -79,7 +94,7 @@ class Model:
         
         # creating file
         file_name = self.current_set_name + ".set"
-        with open("CardSets/" + file_name, "w", encoding="utf-8") as f:
+        with open(self.sets_folder + "/" + file_name, "w", encoding="utf-8") as f:
             file_content = ""
             for card in self.current_set:
                 file_content += card[0] + "," + card[1] + "\n"
@@ -95,7 +110,7 @@ class Model:
         
 
         # loading
-        with open("CardSets/" + file_name, "r", encoding="utf-8") as file:
+        with open(self.sets_folder + "/" + file_name, "r", encoding="utf-8") as file:
             return file.read()
         
     def apply_direct_edit(self, file_text, file_name=None):
@@ -111,7 +126,7 @@ class Model:
                     return "Invalid"
 
         # saving to file
-        with open("CardSets/" + file_name, "w", encoding="utf-8") as file:
+        with open(self.sets_folder + "/" + file_name, "w", encoding="utf-8") as file:
             file.write(file_text)
 
         # loading file again
