@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter.filedialog import *
 import tkinter.font as tkFont
 import time
 import threading
@@ -179,12 +180,14 @@ class View:
         create_button = Button(self.window, text="Create New Set", **self.big_button_kwargs, command=self.controller.prompt_new_set)
         open_button = Button(self.window, text="Load Previous Set", **self.big_button_kwargs, command=self.controller.prompt_load_set)
         practice_button = Button(self.window, text="Practice Set", **self.big_button_kwargs, command=self.controller.prompt_practice)
+        settings_button = Button(self.window, text="Settings", **self.big_button_kwargs, command=self.controller.prompt_settings)
 
         # adding window items
         title.grid(row=0, column=1, **self.widget_grid_kwargs)
         create_button.grid(row=1, column=1, **self.widget_grid_kwargs)
         open_button.grid(row=2, column=1, **self.widget_grid_kwargs)
         practice_button.grid(row=3, column=1, **self.widget_grid_kwargs)
+        settings_button.grid(row=4, column=1, **self.widget_grid_kwargs)
 
     def new_set_prompt(self, set_data=None, name=None):
 
@@ -796,6 +799,78 @@ class View:
         current_answer.trace_add("write", on_answer_changed)
 
         update_question()
+
+    def settings_menu(self):
+
+        # variables
+        set_folder_var = StringVar()
+        # cache_folder_var = StringVar()
+        set_folder_var.set(self.controller.model.sets_folder)
+        # cache_folder_var.set(self.controller.model.cache_folder)
+
+        label_grid_config = self.widget_grid_kwargs.copy()
+        label_grid_config.pop("sticky")
+
+        entry_config = self.entry_kwargs.copy()
+        entry_config["width"] = 40
+        entry_config["state"] = "disabled"
+        
+        # creating window items
+        title = Label(self.window, text="Settings", **self.title_kwargs)
+
+        folder_label = Label(self.window, text="Folder Settings", **self.subtitle_kwargs)
+        sets_folder_label = Label(self.window, **self.label_kwargs, text="Sets:", justify=RIGHT)
+        sets_folder_text = Entry(self.window, **entry_config, textvariable=set_folder_var)
+        sets_folder_button = Button(self.window, **self.blue_button_kwargs, text="Browse")
+        # cache_folder_label = Label(self.window, **self.label_kwargs, text="Cache:", justify=RIGHT)
+        # cache_folder_text = Entry(self.window, **entry_config, textvariable=cache_folder_var)
+        # cache_folder_button = Button(self.window, **self.blue_button_kwargs, text="Browse")
+
+        spacer_label = Label(self.window, **self.spacer_kwargs)
+        cancel_button = Button(self.window, **self.back_button_kwargs, text="Cancel")
+        confirm_button = Button(self.window, **self.green_button_kwargs, text="Confirm")
+
+        # adding window items
+        title.grid(row=0, column=0, columnspan=4, **self.widget_grid_kwargs)
+        
+        folder_label.grid(row=1, column=0, columnspan=4, **self.widget_grid_kwargs)
+        sets_folder_label.grid(row=2, column=0, **label_grid_config, sticky=E)
+        sets_folder_text.grid(row=2, column=1, columnspan=2, **self.widget_grid_kwargs)
+        sets_folder_button.grid(row=2, column=3, **self.widget_grid_kwargs)
+        # cache_folder_label.grid(row=3, column=0, **label_grid_config, sticky=E)
+        # cache_folder_text.grid(row=3, column=1, columnspan=2, **self.widget_grid_kwargs)
+        # cache_folder_button.grid(row=3, column=3, **self.widget_grid_kwargs)
+
+        spacer_label.grid(row=4, column=0, columnspan=4, **self.widget_grid_kwargs)
+        cancel_button.grid(row=5, column=0, columnspan=2, **self.widget_grid_kwargs)
+        confirm_button.grid(row=5, column=2, columnspan=2, **self.widget_grid_kwargs)
+
+        # button functions
+        def on_sets_browse():
+            directory_name = askdirectory()
+            if directory_name != "":
+                set_folder_var.set(directory_name)
+
+        # def on_cache_browse():
+        #     directory_name = askdirectory()
+        #     if directory_name != "":
+        #         cache_folder_var.set(directory_name)
+
+        def on_confirm():
+
+            # changing settings
+            settings = {}
+            settings["sets_folder"] = set_folder_var.get()
+            # settings["cache_folder"] = cache_folder_var.get()
+            self.controller.confirm_settings_change(settings)
+
+            # going back
+            self.back_button()
+
+        # configuring
+        sets_folder_button.config(command=on_sets_browse)
+        #cache_folder_button.config(command=on_cache_browse)
+        confirm_button.config(command=on_confirm)
 
     def are_you_sure(self, prompt, yes_callback, no_callback):
 

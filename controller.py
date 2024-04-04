@@ -36,7 +36,7 @@ class Controller:
 
     def prompt_load_set(self, *args):
         all_files = []
-        for file in os.listdir("CardSets"):
+        for file in os.listdir(self.model.sets_folder):
             if file.endswith(".set"):
                 all_files.append(file)
 
@@ -46,7 +46,7 @@ class Controller:
 
         # double checking action
         def on_yes():
-            os.remove("CardSets/" + set_name)
+            os.remove(self.model.sets_folder + "/" + set_name)
             self.view.reset_view()
             self.prompt_load_set()
 
@@ -67,6 +67,13 @@ class Controller:
 
     def prompt_practice(self):
         self.prompt_load_set(self.view.set_window, "practice_menu")
+
+    def prompt_settings(self):
+        self.view.set_window("settings_menu")
+
+    def confirm_settings_change(self, settings: dict):
+        self.model.apply_settings(settings)
+        self.model.save_cache_file("settings", settings)
 
     def start_quiz(self, subset, to_flip, to_shuffle):
         quiz_data = self.model.create_quiz(subset, to_flip, to_shuffle)

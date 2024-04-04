@@ -1,10 +1,53 @@
 import random
+import os
+import ast
 
 class Model:
     def __init__(self, controller):
         self.controller = controller
         self.current_set = None
         self.current_set_name = ""
+
+        self.folder_path = os.path.dirname(__file__).replace("\\", "/")
+        self.sets_folder = self.folder_path + "/CardSets"
+        self.cache_folder = self.folder_path + "/Cache"
+        self.load_settings()
+
+        # creating folders
+        if not os.path.exists("CardSets"):
+            os.mkdir("CardSets")
+
+        if not os.path.exists("Cache"):
+            os.mkdir("Cache")
+
+    def save_cache_file(self, file_name, file_content: dict):
+        with open(self.cache_folder + "/" + file_name, "w") as f:
+            f.write(str(file_content))
+            f.close()
+
+    def load_cache_file(self, file_name):
+        if os.path.exists(self.cache_folder + "/" + file_name):
+            file = open(self.cache_folder + "/" + file_name)
+            string_text = file.read()
+            cache_dict = ast.literal_eval(string_text)
+            return cache_dict
+        
+    def load_settings(self):
+        file_path = self.cache_folder + "/settings"
+        if os.path.exists(file_path):
+            settings = self.load_cache_file("settings")
+            self.apply_settings(settings)
+        
+    def apply_settings(self, settings: dict):
+        for property_name in settings:
+            property_value = settings[property_name]
+            if getattr(self, property_name):
+                setattr(self, property_name, property_value)
+
+    def change_folder_path(self, property_name: str, new_folder_path: str):
+        if getattr(self, property_name):
+            if os.path.exists(new_folder_path):
+                setattr(self, property_name, new_folder_path)
 
     def shuffle_set(self, set_data=None):
         if set_data == None:
@@ -64,7 +107,7 @@ class Model:
         set_data = []
 
         # finding file
-        with open("CardSets/" + file_name, "r", encoding="utf-8") as f:
+        with open(self.sets_folder + "/" + file_name, "r", encoding="utf-8") as f:
             for line in f.readlines():
                 line = line.replace("\n", "")
                 set_data.append(tuple(line.split(",")))
@@ -79,7 +122,7 @@ class Model:
         
         # creating file
         file_name = self.current_set_name + ".set"
-        with open("CardSets/" + file_name, "w", encoding="utf-8") as f:
+        with open(self.sets_folder + "/" + file_name, "w", encoding="utf-8") as f:
             file_content = ""
             for card in self.current_set:
                 file_content += card[0] + "," + card[1] + "\n"
@@ -95,7 +138,7 @@ class Model:
         
 
         # loading
-        with open("CardSets/" + file_name, "r", encoding="utf-8") as file:
+        with open(self.sets_folder + "/" + file_name, "r", encoding="utf-8") as file:
             return file.read()
         
     def apply_direct_edit(self, file_text, file_name=None):
@@ -111,7 +154,7 @@ class Model:
                     return "Invalid"
 
         # saving to file
-        with open("CardSets/" + file_name, "w", encoding="utf-8") as file:
+        with open(self.sets_folder + "/" + file_name, "w", encoding="utf-8") as file:
             file.write(file_text)
 
         # loading file again
