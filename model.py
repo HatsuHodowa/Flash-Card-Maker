@@ -1,13 +1,17 @@
 import random
 import os
+import ast
 
 class Model:
     def __init__(self, controller):
         self.controller = controller
         self.current_set = None
         self.current_set_name = ""
-        self.sets_folder = "CardSets"
-        self.cache_folder = "Cache"
+
+        self.folder_path = os.path.dirname(__file__).replace("\\", "/")
+        self.sets_folder = self.folder_path + "/CardSets"
+        self.cache_folder = self.folder_path + "/Cache"
+        self.load_settings()
 
         # creating folders
         if not os.path.exists("CardSets"):
@@ -15,6 +19,30 @@ class Model:
 
         if not os.path.exists("Cache"):
             os.mkdir("Cache")
+
+    def save_cache_file(self, file_name, file_content: dict):
+        with open(self.cache_folder + "/" + file_name, "w") as f:
+            f.write(str(file_content))
+            f.close()
+
+    def load_cache_file(self, file_name):
+        if os.path.exists(self.cache_folder + "/" + file_name):
+            file = open(self.cache_folder + "/" + file_name)
+            string_text = file.read()
+            cache_dict = ast.literal_eval(string_text)
+            return cache_dict
+        
+    def load_settings(self):
+        file_path = self.cache_folder + "/settings"
+        if os.path.exists(file_path):
+            settings = self.load_cache_file("settings")
+            self.apply_settings(settings)
+        
+    def apply_settings(self, settings: dict):
+        for property_name in settings:
+            property_value = settings[property_name]
+            if getattr(self, property_name):
+                setattr(self, property_name, property_value)
 
     def change_folder_path(self, property_name: str, new_folder_path: str):
         if getattr(self, property_name):

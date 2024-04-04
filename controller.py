@@ -68,6 +68,13 @@ class Controller:
     def prompt_practice(self):
         self.prompt_load_set(self.view.set_window, "practice_menu")
 
+    def prompt_settings(self):
+        self.view.set_window("settings_menu")
+
+    def confirm_settings_change(self, settings: dict):
+        self.model.apply_settings(settings)
+        self.model.save_cache_file("settings", settings)
+
     def start_quiz(self, subset, to_flip, to_shuffle):
         quiz_data = self.model.create_quiz(subset, to_flip, to_shuffle)
         self.view.set_window("practice_quiz", quiz_data)
