@@ -656,6 +656,7 @@ class View:
         quiz_name = Label(self.window, text=set_name, **self.subtitle_kwargs)
         question_number = Label(self.window, **self.label_kwargs, text=f"Question 1/{last_question}")
         attempts_label = Label(self.window, **self.label_kwargs, text="Attempts: 0")
+        score_label = Label(self.window, **self.label_kwargs, text="Score: N/A")
 
         question_label = Label(self.window, **self.subtitle_kwargs, text="None")
         answer_label = Label(self.window, **self.label_kwargs, text="Answer:")
@@ -673,17 +674,18 @@ class View:
         quiz_name.grid(row=1, column=0, columnspan=2, **self.widget_grid_kwargs)
         question_number.grid(row=2, column=0, **self.widget_grid_kwargs)
         attempts_label.grid(row=2, column=1, **self.widget_grid_kwargs)
+        score_label.grid(row=3, column=0, columnspan=2, **self.widget_grid_kwargs)
 
-        question_label.grid(row=3, column=0, columnspan=2, **self.widget_grid_kwargs)
-        answer_label.grid(row=4, column=0, columnspan=2, **self.widget_grid_kwargs)
-        answer_entry.grid(row=5, column=0, columnspan=2, **self.widget_grid_kwargs)
-        reveal_button.grid(row=6, column=0, **self.widget_grid_kwargs)
-        check_button.grid(row=6, column=1, **self.widget_grid_kwargs)
+        question_label.grid(row=4, column=0, columnspan=2, **self.widget_grid_kwargs)
+        answer_label.grid(row=5, column=0, columnspan=2, **self.widget_grid_kwargs)
+        answer_entry.grid(row=6, column=0, columnspan=2, **self.widget_grid_kwargs)
+        reveal_button.grid(row=7, column=0, **self.widget_grid_kwargs)
+        check_button.grid(row=7, column=1, **self.widget_grid_kwargs)
 
-        feedback_label.grid(row=7, column=0, columnspan=2, **self.widget_grid_kwargs)
-        prev_button.grid(row=8, column=0, **self.widget_grid_kwargs)
-        next_button.grid(row=8, column=1, **self.widget_grid_kwargs)
-        back_button.grid(row=9, column=0, **self.widget_grid_kwargs)
+        feedback_label.grid(row=8, column=0, columnspan=2, **self.widget_grid_kwargs)
+        prev_button.grid(row=9, column=0, **self.widget_grid_kwargs)
+        next_button.grid(row=9, column=1, **self.widget_grid_kwargs)
+        back_button.grid(row=10, column=0, **self.widget_grid_kwargs)
 
         # other functions 
         def lock_question(*exclude):
@@ -708,10 +710,23 @@ class View:
             if self._current_question in self._feedback_states:
                 saved_feedback = self._feedback_states[self._current_question]
 
+            # calculating score
+            correct_answers = len(self._questions_correct)
+            score_out_of = 0
+            for question_index in self._attempts_per_question:
+                score_out_of += self._attempts_per_question[question_index]
+            score_out_of += correct_answers + len(self._questions_revealed)
+
+            if score_out_of > 0:
+                total_score = str(round(correct_answers * 100 / score_out_of)) + "%"
+            else:
+                total_score = "N/A"
+
             # updating question
             question_label.config(text=quiz_data[self._current_question - 1][0])
             question_number.config(text=f"Question {self._current_question}/{last_question}")
             attempts_label.config(text=f"Attempts: {current_attempts}")
+            score_label.config(text=f"Score: {correct_answers}/{score_out_of}, {total_score}")
 
             # resetting display
             current_answer.set(saved_answer)
@@ -760,6 +775,7 @@ class View:
 
                 # saving correct answer
                 self._questions_correct.append(self._current_question)
+                update_question()
                 
             else:
 
@@ -787,6 +803,7 @@ class View:
 
             # adding to list
             self._questions_revealed.append(self._current_question)
+            update_question()
 
         def on_answer_changed(var, index, mode):
             self._current_quiz_answers[self._current_question] = current_answer.get()
